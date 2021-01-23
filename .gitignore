@@ -1,0 +1,7 @@
+/.vscode
+/build
+do_tests.lua
+*.exe
+*.o
+*.s
+*.h.gch
