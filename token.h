@@ -5,7 +5,7 @@ enum class TokenType
 {
     ASSIGN,
     COMMA,
-    EOF,
+    _EOF,
     FUNCTION,
     IDENT,
     ILLEGAL,
@@ -24,6 +24,7 @@ class Token
     char literal;
     TokenType token_type;
 public:
+    Token() = default;
     Token(TokenType t, char l)
     { 
         token_type = t;
