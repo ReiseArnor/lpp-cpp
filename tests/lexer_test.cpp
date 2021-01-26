@@ -15,9 +15,9 @@ TEST_CASE("Illegal lexers", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens { 
-        Token(TokenType::ILLEGAL, '!'),
-        Token(TokenType::ILLEGAL, '?'),
-        Token(TokenType::ILLEGAL, '@')
+        Token(TokenType::ILLEGAL, "!"),
+        Token(TokenType::ILLEGAL, "?"),
+        Token(TokenType::ILLEGAL, "@")
     };
 
     REQUIRE(tokens == expected_tokens);
@@ -32,8 +32,8 @@ TEST_CASE("One character operator", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens {
-        Token(TokenType::ASSIGN, '='),
-        Token(TokenType::PLUS, '+')
+        Token(TokenType::ASSIGN, "="),
+        Token(TokenType::PLUS, "+")
     };
 
     REQUIRE(tokens == expected_tokens);
@@ -48,8 +48,8 @@ TEST_CASE("EOF", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens {
-        Token(TokenType::PLUS, '+'),
-        Token(TokenType::_EOF, 0)
+        Token(TokenType::PLUS, "+"),
+        Token(TokenType::_EOF, "\0")
     };
 
     REQUIRE(tokens == expected_tokens);
@@ -64,12 +64,31 @@ TEST_CASE("Delimiters", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens {
-        Token(TokenType::LPAREN, '('),
-        Token(TokenType::RPAREN, ')'),
-        Token(TokenType::LBRACE, '{'),
-        Token(TokenType::RBRACE, '}'),
-        Token(TokenType::COMMA, ','),
-        Token(TokenType::SEMICOLON, ';')
+        Token(TokenType::LPAREN, "("),
+        Token(TokenType::RPAREN, ")"),
+        Token(TokenType::LBRACE, "{"),
+        Token(TokenType::RBRACE, "}"),
+        Token(TokenType::COMMA, ","),
+        Token(TokenType::SEMICOLON, ";")
+    };
+
+    REQUIRE(tokens == expected_tokens);
+}
+
+TEST_CASE("Assignment", "[lexer]")
+{
+    string src = "variable cinco = 5;";
+    Lexer lexer(src);
+    vector<Token> tokens;
+    for(size_t i = 0; i <= 4; i++)
+        tokens.push_back(lexer.next_token());
+
+    vector<Token> expected_tokens {
+        Token(TokenType::LET, "variable", 8),
+        Token(TokenType::IDENT, "cinco", 5),
+        Token(TokenType::ASSIGN, "="),
+        Token(TokenType::INT, "5"),
+        Token(TokenType::SEMICOLON, ";")
     };
 
     REQUIRE(tokens == expected_tokens);
