@@ -12,6 +12,9 @@ private:
     int position;
 
     void read_character();
+    Token read_identifier();
+    bool keyword(const std::string&);
+    Token read_number();
 
 public:
     explicit Lexer(const std::string&);
