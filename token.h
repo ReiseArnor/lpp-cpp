@@ -1,6 +1,5 @@
 #ifndef TOKEN_H
 #define TOKEN_H
-#include <bits/c++config.h>
 #include <string>
 
 enum class TokenType
