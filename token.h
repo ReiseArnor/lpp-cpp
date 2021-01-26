@@ -1,5 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
+#include <bits/c++config.h>
+#include <string>
 
 enum class TokenType
 {
@@ -21,15 +23,13 @@ enum class TokenType
 
 class Token
 {
-    char literal;
+    std::string literal;
     TokenType token_type;
 public:
     Token() = default;
-    Token(TokenType t, char l)
-    { 
-        token_type = t;
-        literal = l;
-    }
+    Token(TokenType t, const char* l, std::size_t s = 1) : literal(l, s), token_type(t) {}
+    Token(TokenType t, const char* b, const char* e) : literal(b, e), token_type(t) {}
+    
     bool operator==(const Token& r) const noexcept
     {   
         if (token_type != r.token_type || literal != r.literal)
