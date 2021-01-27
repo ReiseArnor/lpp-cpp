@@ -30,7 +30,6 @@ Lexer::Lexer(const string& src) : source(src)
 
  Token Lexer::next_token()
 {
-    Token token;
     read_character();
     while (skip_whitespace(current_char))
         read_character();
@@ -90,7 +89,6 @@ Lexer::Lexer(const string& src) : source(src)
         case 'Y':
         case 'Z':
             return read_identifier();
-
         case '0':
         case '1':
         case '2':
@@ -102,34 +100,36 @@ Lexer::Lexer(const string& src) : source(src)
         case '8':
         case '9':
             return read_number();
-        
         case '=':
             return Token { TokenType::ASSIGN, &current_char };
-
         case '+':
             return Token { TokenType::PLUS, &current_char };
-
+        case '-':
+            return Token { TokenType::MINUS, &current_char };
+        case '/':
+            return Token { TokenType::DIVISION, &current_char };
+        case '*':
+            return Token { TokenType::MULTIPLICATION, &current_char };
+        case '!':
+            return Token { TokenType::NEGATION, &current_char };
+        case '<':
+            return Token { TokenType::LT, &current_char };
+        case '>':
+            return Token { TokenType::GT, &current_char };
         case '(':
             return Token { TokenType::LPAREN, &current_char };
-
         case ')':
             return Token { TokenType::RPAREN, &current_char };
-
         case '{':
             return Token { TokenType::LBRACE, &current_char };
-
         case '}':
             return Token { TokenType::RBRACE, &current_char };
-
         case ',':
             return Token { TokenType::COMMA, &current_char };
-
         case ';':
             return Token { TokenType::SEMICOLON, &current_char };
-
         case '\0':
             return Token { TokenType::_EOF, &current_char };
-
         default:
             return Token { TokenType::ILLEGAL, &current_char };
     }
@@ -266,10 +266,16 @@ Token Lexer::keyword(const string& s)
 {
     map<string, TokenType> keywords = {
         {"variable", TokenType::LET},
-        {"procedimiento", TokenType::FUNCTION}
+        {"procedimiento", TokenType::FUNCTION},
+        {"regresa", TokenType::RETURN},
+        {"si", TokenType::IF},
+        {"si_no", TokenType::ELSE},
+        {"verdadero", TokenType::TRUE},
+        {"falso", TokenType::FALSE}
     };
+
     if(keywords.find(s) != keywords.end())
-        return Token(keywords[s], &s.at(0), s.size());
+        return Token(keywords[s], s);
     
-    return Token(TokenType::IDENT, &s.at(0), s.size());
+    return Token(TokenType::IDENT, s);
 }
