@@ -168,13 +168,13 @@ TEST_CASE("Control statement", "[lexer]")
         Token(TokenType::RPAREN, ")"),
         Token(TokenType::LBRACE, "{"),
         Token(TokenType::RETURN, "regresa", 7),
-        Token(TokenType::TRUE, "verdadero", 9),
+        Token(TokenType::_TRUE, "verdadero", 9),
         Token(TokenType::SEMICOLON, ";"),
         Token(TokenType::RBRACE, "}"),
         Token(TokenType::ELSE, "si_no", 5),
         Token(TokenType::LBRACE, "{"),
         Token(TokenType::RETURN, "regresa", 7),
-        Token(TokenType::FALSE, "falso", 5),
+        Token(TokenType::_FALSE, "falso", 5),
         Token(TokenType::SEMICOLON, ";"),
         Token(TokenType::RBRACE, "}")
     };

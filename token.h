@@ -24,8 +24,8 @@ enum class TokenType
     DIVISION,
     MULTIPLICATION,
     NEGATION,
-    TRUE,
-    FALSE,
+    _TRUE,
+    _FALSE,
     IF,
     ELSE,
     RETURN      

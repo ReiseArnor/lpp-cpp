@@ -270,8 +270,8 @@ Token Lexer::keyword(const string& s)
         {"regresa", TokenType::RETURN},
         {"si", TokenType::IF},
         {"si_no", TokenType::ELSE},
-        {"verdadero", TokenType::TRUE},
-        {"falso", TokenType::FALSE}
+        {"verdadero", TokenType::_TRUE},
+        {"falso", TokenType::_FALSE}
     };
 
     if(keywords.find(s) != keywords.end())
