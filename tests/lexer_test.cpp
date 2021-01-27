@@ -8,15 +8,14 @@ using namespace std;
 
 TEST_CASE("Illegal lexers", "[lexer]")
 {
-    string str = "!?@";
+    string str = "$@";
     Lexer lexer(str);
     vector<Token> tokens;
     for(auto s : str)
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens { 
-        Token(TokenType::ILLEGAL, "!"),
-        Token(TokenType::ILLEGAL, "?"),
+        Token(TokenType::ILLEGAL, "$"),
         Token(TokenType::ILLEGAL, "@")
     };
 
@@ -25,7 +24,7 @@ TEST_CASE("Illegal lexers", "[lexer]")
 
 TEST_CASE("One character operator", "[lexer]")
 {
-    string str = "=+";
+    string str = "=+-/*!";
     Lexer lexer(str);
     vector<Token> tokens;
     for(auto s : str)
@@ -33,7 +32,11 @@ TEST_CASE("One character operator", "[lexer]")
 
     vector<Token> expected_tokens {
         Token(TokenType::ASSIGN, "="),
-        Token(TokenType::PLUS, "+")
+        Token(TokenType::PLUS, "+"),
+        Token(TokenType::MINUS, "-"),
+        Token(TokenType::DIVISION, "/"),
+        Token(TokenType::MULTIPLICATION, "*"),
+        Token(TokenType::NEGATION, "!")
     };
 
     REQUIRE(tokens == expected_tokens);
