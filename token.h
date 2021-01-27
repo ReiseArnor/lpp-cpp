@@ -17,18 +17,31 @@ enum class TokenType
     PLUS,
     RBRACE,
     RPAREN,
-    SEMICOLON
+    SEMICOLON,
+    LT,
+    GT,
+    MINUS,
+    DIVISION,
+    MULTIPLICATION,
+    NEGATION,
+    TRUE,
+    FALSE,
+    IF,
+    ELSE,
+    RETURN      
 };
 
 class Token
 {
+public:
     std::string literal;
     TokenType token_type;
-public:
+
     Token() = default;
     Token(TokenType t, const char* l, std::size_t s = 1) : literal(l, s), token_type(t) {}
     Token(TokenType t, const char* b, const char* e) : literal(b, e), token_type(t) {}
-    
+    Token(TokenType t, const std::string& s) : literal(s), token_type(t) {}
+
     bool operator==(const Token& r) const noexcept
     {   
         if (token_type != r.token_type || literal != r.literal)
