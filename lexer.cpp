@@ -249,9 +249,7 @@ Token Lexer::read_identifier()
     const char* end = &source.at(position);
     read_position = position;
 
-    if (keyword(string(begin, end))) return Token { TokenType::LET, begin, end };
-
-    return Token { TokenType::IDENT, begin, end };
+    return keyword(string(begin, end));
 }
 
 Token Lexer::read_number()
@@ -264,10 +262,14 @@ Token Lexer::read_number()
     return Token { TokenType::INT, begin, end };
 }
 
-bool Lexer::keyword(const string& s)
+Token Lexer::keyword(const string& s)
 {
-    map<string, bool> keywords = {
-        {"variable", true}
+    map<string, TokenType> keywords = {
+        {"variable", TokenType::LET},
+        {"procedimiento", TokenType::FUNCTION}
     };
-    return keywords[s];
+    if(keywords.find(s) != keywords.end())
+        return Token(keywords[s], &s.at(0), s.size());
+    
+    return Token(TokenType::IDENT, &s.at(0), s.size());
 }

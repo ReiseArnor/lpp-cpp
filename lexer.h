@@ -13,7 +13,7 @@ private:
 
     void read_character();
     Token read_identifier();
-    bool keyword(const std::string&);
+    Token keyword(const std::string&);
     Token read_number();
 
 public:
