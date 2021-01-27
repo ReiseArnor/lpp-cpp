@@ -93,3 +93,57 @@ TEST_CASE("Assignment", "[lexer]")
 
     REQUIRE(tokens == expected_tokens);
 }
+
+TEST_CASE("Function declaration", "[lexer]")
+{
+    string src {"variable suma = procedimiento(x, y) { x + y; };"};
+    Lexer lexer(src);
+    vector<Token> tokens;
+    for(size_t i = 0; i <= 15; i++)
+        tokens.push_back(lexer.next_token());
+
+    vector<Token> expected_tokens {
+        Token(TokenType::LET, "variable", 8),
+        Token(TokenType::IDENT, "suma", 4),
+        Token(TokenType::ASSIGN, "="),
+        Token(TokenType::FUNCTION, "procedimiento", 13),
+        Token(TokenType::LPAREN, "("),
+        Token(TokenType::IDENT, "x"),
+        Token(TokenType::COMMA, ","),
+        Token(TokenType::IDENT, "y"),
+        Token(TokenType::RPAREN, ")"),
+        Token(TokenType::LBRACE, "{"),
+        Token(TokenType::IDENT, "x"),
+        Token(TokenType::PLUS, "+"),
+        Token(TokenType::IDENT, "y"),
+        Token(TokenType::SEMICOLON, ";"),
+        Token(TokenType::RBRACE, "}"),
+        Token(TokenType::SEMICOLON, ";")
+    };
+
+    REQUIRE(tokens == expected_tokens);
+}
+
+TEST_CASE("Function call", "[lexer]")
+{
+    string src {"variable resultado = suma(dos, tres);"};
+    Lexer lexer(src);
+    vector<Token> tokens;
+    for(size_t i = 0; i <= 9; i++)
+        tokens.push_back(lexer.next_token());
+
+    vector<Token> expected_tokens {
+        Token(TokenType::LET, "variable", 8),
+        Token(TokenType::IDENT, "resultado", 9),
+        Token(TokenType::ASSIGN, "="),
+        Token(TokenType::IDENT, "suma", 4),
+        Token(TokenType::LPAREN, "("),
+        Token(TokenType::IDENT, "dos", 3),
+        Token(TokenType::COMMA, ","),
+        Token(TokenType::IDENT, "tres", 4),
+        Token(TokenType::RPAREN, ")"),
+        Token(TokenType::SEMICOLON, ";")
+    };
+
+    REQUIRE(tokens == expected_tokens);
+}
