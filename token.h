@@ -28,7 +28,9 @@ enum class TokenType
     _FALSE,
     IF,
     ELSE,
-    RETURN      
+    RETURN,
+    EQ,
+    NOT_EQ
 };
 
 class Token

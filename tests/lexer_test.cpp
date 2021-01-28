@@ -181,3 +181,25 @@ TEST_CASE("Control statement", "[lexer]")
     
     REQUIRE(tokens == expected_tokens);
 }
+
+TEST_CASE("Two character operator", "[lexer]")
+{
+    string src = "10 == 10; 10 != 9;";
+    Lexer lexer(src);
+    vector<Token> tokens;
+    for(size_t i = 0; i <= 7; i++)
+        tokens.push_back(lexer.next_token());
+
+    vector<Token> expected_tokens {
+        Token(TokenType::INT, "10", 2),
+        Token(TokenType::EQ, "==", 2),
+        Token(TokenType::INT, "10", 2),
+        Token(TokenType::SEMICOLON, ";"),
+        Token(TokenType::INT, "10", 2),
+        Token(TokenType::NOT_EQ, "!=", 2),
+        Token(TokenType::INT, "9"),
+        Token(TokenType::SEMICOLON, ";")
+    };
+    
+    REQUIRE(tokens == expected_tokens);
+}

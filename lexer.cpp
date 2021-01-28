@@ -101,6 +101,9 @@ Lexer::Lexer(const string& src) : source(src)
         case '9':
             return read_number();
         case '=':
+            if(peek_character() == '=') 
+            {   read_position++;
+                return Token { TokenType::EQ, "==", 2 }; }
             return Token { TokenType::ASSIGN, &current_char };
         case '+':
             return Token { TokenType::PLUS, &current_char };
@@ -111,6 +114,9 @@ Lexer::Lexer(const string& src) : source(src)
         case '*':
             return Token { TokenType::MULTIPLICATION, &current_char };
         case '!':
+            if(peek_character() == '=') 
+            {   read_position++;
+                return Token { TokenType::NOT_EQ, "!=", 2 }; }
             return Token { TokenType::NEGATION, &current_char };
         case '<':
             return Token { TokenType::LT, &current_char };
@@ -262,7 +268,7 @@ Token Lexer::read_number()
     return Token { TokenType::INT, begin, end };
 }
 
-Token Lexer::keyword(const string& s)
+Token Lexer::keyword(const string& s) const
 {
     map<string, TokenType> keywords = {
         {"variable", TokenType::LET},
@@ -278,4 +284,9 @@ Token Lexer::keyword(const string& s)
         return Token(keywords[s], s);
     
     return Token(TokenType::IDENT, s);
+}
+
+char Lexer::peek_character() const
+{
+    return read_position >= source.size() ? '\0' : source.at(read_position);
 }

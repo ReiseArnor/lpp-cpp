@@ -13,8 +13,9 @@ private:
 
     void read_character();
     Token read_identifier();
-    Token keyword(const std::string&);
+    Token keyword(const std::string&) const;
     Token read_number();
+    char peek_character() const;
 
 public:
     explicit Lexer(const std::string&);
