@@ -1,0 +1,42 @@
+name: CMake
+
+on: [push, pull_request]
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    name: Linux
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      run: mkdir build
+    
+    - name: Generating files
+      run: cmake -Bbuild -H.
+      
+    - name: Building
+      run: cmake --build build/
+      
+    - name: Test
+      working-directory: ./build
+      run: ctest --output-on-failure
+      
+  build_osx:
+    runs-on: macos-latest
+    name: MacOS
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      run: mkdir build
+    
+    - name: Generating files
+      run: cmake -Bbuild -H.
+      
+    - name: Building
+      run: cmake --build build/
+
+    - name: Test
+      working-directory: ./build
+      run: ctest --output-on-failure
