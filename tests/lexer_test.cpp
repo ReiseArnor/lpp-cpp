@@ -44,18 +44,53 @@ TEST_CASE("One character operator", "[lexer]")
 
 TEST_CASE("EOF", "[lexer]")
 {
-    string str = "+";
-    Lexer lexer(str);
-    vector<Token> tokens;
-    for(size_t i = 0; i <= str.size(); i++)
-        tokens.push_back(lexer.next_token());
+    SECTION("with operator")
+    {
+        string str = "+-+";
+        Lexer lexer(str);
+        vector<Token> tokens;
+        for(size_t i = 0; i <= 3; i++)
+            tokens.push_back(lexer.next_token());
 
-    vector<Token> expected_tokens {
-        Token(TokenType::PLUS, "+"),
-        Token(TokenType::_EOF, "\0")
-    };
+        vector<Token> expected_tokens {
+            Token(TokenType::PLUS, "+"),
+            Token(TokenType::MINUS, "-"),
+            Token(TokenType::PLUS, "+"),
+            Token(TokenType::_EOF, "\0")
+        };
 
-    REQUIRE(tokens == expected_tokens);
+        REQUIRE(tokens == expected_tokens);
+    }
+    SECTION("with letter")
+    {
+        string str = "home";
+        Lexer lexer(str);
+        vector<Token> tokens;
+        for(size_t i = 0; i <= 1; i++)
+            tokens.push_back(lexer.next_token());
+
+        vector<Token> expected_tokens {
+            Token(TokenType::IDENT, "home", 4),
+            Token(TokenType::_EOF, "\0")
+        };
+
+        REQUIRE(tokens == expected_tokens);
+    }
+    SECTION("with number")
+    {
+        string str = "100";
+        Lexer lexer(str);
+        vector<Token> tokens;
+        for(size_t i = 0; i <= 1; i++)
+            tokens.push_back(lexer.next_token());
+
+        vector<Token> expected_tokens {
+            Token(TokenType::INT, "100", 3),
+            Token(TokenType::_EOF, "\0")
+        };
+
+        REQUIRE(tokens == expected_tokens);
+    }
 }
 
 TEST_CASE("Delimiters", "[lexer]")
