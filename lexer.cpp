@@ -1,5 +1,4 @@
 #include "lexer.h"
-#include "catch2/catch.hpp"
 #include "token.h"
 #include <iostream>
 #include <string>
@@ -8,6 +7,7 @@ using namespace std;
 
 bool is_indentation(char);
 bool is_number(char);
+bool is_identifier(char);
 bool skip_whitespace(char);
 
 Lexer::Lexer(const string& src) : source(src) 
@@ -18,12 +18,13 @@ Lexer::Lexer(const string& src) : source(src)
 }
 
  void Lexer::read_character()
+ // TODO switch to char pointers instead of ints
 {
     if(read_position >= source.size())
         current_char = '\0';
     else
         current_char = source.at(read_position);
-    
+
     position = read_position;
     read_position++;
 }
@@ -103,7 +104,7 @@ Lexer::Lexer(const string& src) : source(src)
         case '=':
             if(peek_character() == '=') 
             {   read_position++;
-                return Token { TokenType::EQ, "==", 2 }; }
+                return Token { TokenType::EQ, "==", 2 }; } 
             return Token { TokenType::ASSIGN, &current_char };
         case '+':
             return Token { TokenType::PLUS, &current_char };
@@ -139,6 +140,53 @@ Lexer::Lexer(const string& src) : source(src)
         default:
             return Token { TokenType::ILLEGAL, &current_char };
     }
+}
+
+Token Lexer::read_identifier()
+{
+    const char* begin = &source.at(position);
+    const char* end;
+    while (is_identifier(current_char)) read_character();
+    if(current_char == '\0') {end = &source.at(position - 1); end++; }
+    else end = &source.at(position);
+    read_position = position;
+
+    return keyword(string(begin, end));
+}
+
+Token Lexer::read_number()
+{
+    const char* begin = &source.at(position);
+    const char* end;
+    while (is_number(current_char)) read_character();
+    if(current_char == '\0'){ end = &source.at(position - 1); end++; }
+    else end = &source.at(position);
+    read_position = position;
+
+    return Token { TokenType::INT, begin, end };
+}
+
+Token Lexer::keyword(const string& s) const
+{
+    map<string, TokenType> keywords = {
+        {"variable", TokenType::LET},
+        {"procedimiento", TokenType::FUNCTION},
+        {"regresa", TokenType::RETURN},
+        {"si", TokenType::IF},
+        {"si_no", TokenType::ELSE},
+        {"verdadero", TokenType::_TRUE},
+        {"falso", TokenType::_FALSE}
+    };
+
+    if(keywords.find(s) != keywords.end())
+        return Token(keywords[s], s);
+    
+    return Token(TokenType::IDENT, s);
+}
+
+char Lexer::peek_character() const
+{
+    return read_position >= source.size() ? '\0' : source.at(read_position);
 }
 
 bool is_identifier(char c)
@@ -246,47 +294,4 @@ bool skip_whitespace(char c)
         default:
             return false;
     }
-}
-
-Token Lexer::read_identifier()
-{
-    const char* begin = &source.at(position);
-    while (is_identifier(current_char)) read_character();
-    const char* end = &source.at(position);
-    read_position = position;
-
-    return keyword(string(begin, end));
-}
-
-Token Lexer::read_number()
-{
-    const char* begin = &source.at(position);
-    while (is_number(current_char)) read_character();
-    const char* end = &source.at(position);
-    read_position = position;
-
-    return Token { TokenType::INT, begin, end };
-}
-
-Token Lexer::keyword(const string& s) const
-{
-    map<string, TokenType> keywords = {
-        {"variable", TokenType::LET},
-        {"procedimiento", TokenType::FUNCTION},
-        {"regresa", TokenType::RETURN},
-        {"si", TokenType::IF},
-        {"si_no", TokenType::ELSE},
-        {"verdadero", TokenType::_TRUE},
-        {"falso", TokenType::_FALSE}
-    };
-
-    if(keywords.find(s) != keywords.end())
-        return Token(keywords[s], s);
-    
-    return Token(TokenType::IDENT, s);
-}
-
-char Lexer::peek_character() const
-{
-    return read_position >= source.size() ? '\0' : source.at(read_position);
 }
