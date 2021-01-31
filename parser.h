@@ -14,6 +14,7 @@ class Parser
     std::vector<std::string> errors_list;
     Statement* parse_statement();
     LetStatement* parse_let_statement();
+    ReturnStatement* parse_return_statement();
     bool expected_token(const TokenType&);
     void advance_tokens();
     void expected_token_error(const TokenType&);

@@ -91,4 +91,19 @@ public:
     }
 };
 
+class ReturnStatement : public Statement
+{
+public:
+    Expression return_value;
+    ReturnStatement() = default;
+    explicit ReturnStatement(const Token& t) : Statement(t) {}
+    explicit ReturnStatement(const Token& t, const Expression& rv)
+        : Statement(t), return_value(rv) {}
+
+    friend std::ostream& operator<<(std::ostream& out, const ReturnStatement& rs)
+    {
+        out << rs.token_literal() << " " << rs.return_value.token_literal();
+        return out;
+    }
+};
 #endif // AST_H

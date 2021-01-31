@@ -31,6 +31,8 @@ Statement* Parser::parse_statement()
     // the program receiving the pointer owns it
     if(current_token.token_type == TokenType::LET)
         return parse_let_statement();
+    if(current_token.token_type == TokenType::RETURN)
+        return parse_return_statement();
     return nullptr;
 }
 
@@ -50,6 +52,17 @@ LetStatement* Parser::parse_let_statement()
         advance_tokens();
 
     return let_statement;
+}
+
+ReturnStatement* Parser::parse_return_statement()
+{
+    ReturnStatement* return_statement = new ReturnStatement(current_token);
+    advance_tokens();
+
+    while (current_token.token_type != TokenType::SEMICOLON)
+        advance_tokens();
+
+    return return_statement;
 }
 
 bool Parser::expected_token(const TokenType& tp)

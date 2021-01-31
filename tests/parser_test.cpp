@@ -52,3 +52,15 @@ TEST_CASE("Parse errors", "[parser]")
 
     REQUIRE(parser.errors().size() == 1);
 }
+
+TEST_CASE("Return statement", "[parser]")
+{
+    string str = "regresa 5; regresa foo;";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program = parser.parse_program();
+
+    CHECK(program.statements.size() == 2);
+    for(auto& s : program.statements)
+        CHECK(s->token_literal() == "regresa");
+}
