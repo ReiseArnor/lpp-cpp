@@ -12,9 +12,8 @@ TEST_CASE("Parse program", "[parser]")
     string str = "variable x =5;";
     Lexer lexer(str);
     Parser parser(lexer);
-    Program program;
-
-    REQUIRE_NOTHROW(program = parser.parse_program());
+    
+    CHECK_NOTHROW(parser.parse_program());
 }
 
 TEST_CASE("Let statements", "[parser]")
