@@ -42,3 +42,13 @@ TEST_CASE("Identifiers", "[parser]")
     for(size_t i = 0; i < 3; i++)
         CHECK(static_cast<LetStatement*>(program.statements.at(i))->name.value == names.at(i));
 }
+
+TEST_CASE("Parse errors", "[parser]")
+{
+    string str = "variable x 5;";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program = parser.parse_program();
+
+    REQUIRE(parser.errors().size() == 1);
+}

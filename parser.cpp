@@ -3,6 +3,7 @@
 #include "lexer.h"
 #include "token.h"
 #include <iostream>
+#include <string>
 using namespace std;
 
 Parser::Parser(const Lexer& l) : lexer(l)
@@ -51,13 +52,14 @@ LetStatement* Parser::parse_let_statement()
     return let_statement;
 }
 
-bool Parser::expected_token(const TokenType tp)
+bool Parser::expected_token(const TokenType& tp)
 {
     if(peek_token.token_type == tp)
     {
         advance_tokens();
         return true;
     }
+    expected_token_error(tp);
     return false;
 }
 
@@ -65,4 +67,18 @@ void Parser::advance_tokens()
 {
     current_token = peek_token;
     peek_token = lexer.next_token();
+}
+
+vector<string>& Parser::errors()
+{
+    return errors_list;
+}
+
+void Parser::expected_token_error(const TokenType& tp)
+{
+    string error = "Se esperaba que el siguente token fuera ";
+    error.append(getNameForValue(enums_strings, tp));
+    error.append(" pero se obtuvo ");
+    error.append(getNameForValue(enums_strings, peek_token.token_type) + "\n");
+    errors_list.push_back(error);
 }
