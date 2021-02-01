@@ -4,7 +4,7 @@
 #include <array>
 #include <cstddef>
 #include <string>
-#include "../catch2/catch.hpp"
+#include "catch2/catch.hpp"
 using namespace std;
 
 TEST_CASE("Parse program", "[parser]")
