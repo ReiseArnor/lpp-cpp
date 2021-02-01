@@ -9,6 +9,7 @@ class ASTNode
 {
 public:
     virtual std::string token_literal() const = 0;
+    virtual std::string to_string() const = 0;
     virtual ~ASTNode(){}
 };
 
@@ -28,6 +29,7 @@ public:
     Expression() = default;
     explicit Expression(const Token& t) : token(t) {}
     std::string token_literal() const override { return token.literal; }
+    std::string to_string() const override { return token.literal; }
 };
 
 class Program : public ASTNode
@@ -47,11 +49,12 @@ public:
         return "";
     }
 
-    friend std::ostream& operator<<(std::ostream& out, const Program& p)
+    std::string to_string() const override
     {
-        for(auto s : p.statements)
-            out << s->token_literal() << "\n";
-        return out;
+        std::string str;
+        for(auto s : statements)
+            str.append(s->to_string());
+        return str;
     }
 
     ~Program()
@@ -69,9 +72,9 @@ public:
     Identifier(const Token& t, const std::string& v) 
         : Expression(t), value(v) {}
 
-    friend std::ostream& operator<<(std::ostream& out, const Identifier& e)
+    std::string to_string() const override
     {
-        return out << e.value;
+        return value;
     }
 };
 
@@ -85,9 +88,9 @@ public:
     explicit LetStatement(const Token& token, const Identifier& name, const Expression& value) 
         : Statement(token), name(name), value(value) {}
 
-    friend std::ostream& operator<<(std::ostream& out, const LetStatement& ls)
+    std::string to_string() const override
     {
-        return out << ls.token_literal() << " " << ls.name << " = " << ls.value.token_literal() << ";\n";
+        return token_literal() + " " + name.to_string() + " = " + value.to_string() + ";";
     }
 };
 
@@ -100,10 +103,9 @@ public:
     explicit ReturnStatement(const Token& t, const Expression& rv)
         : Statement(t), return_value(rv) {}
 
-    friend std::ostream& operator<<(std::ostream& out, const ReturnStatement& rs)
+    std::string to_string() const override
     {
-        out << rs.token_literal() << " " << rs.return_value.token_literal();
-        return out;
+        return token_literal() + " " + return_value.to_string() + ";";
     }
 };
 #endif // AST_H
