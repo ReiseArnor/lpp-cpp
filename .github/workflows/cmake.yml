@@ -40,3 +40,23 @@ jobs:
     - name: Test
       working-directory: ./build
       run: ctest --output-on-failure
+
+  build_windows:
+    runs-on: windows-latest
+    name: Windows
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      run: mkdir build;
+    
+    - name: Generating files
+      run: cmake -G "Visual Studio 16 2019" -Bbuild
+      
+    - name: Building
+      run: cmake --build build/ 
+
+    - name: Test
+      working-directory: .\build
+      run: ctest --output-on-failure
