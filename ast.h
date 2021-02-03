@@ -1,6 +1,6 @@
 #ifndef AST_H
 #define AST_H
-#include <ostream>
+#include <cstddef>
 #include <string>
 #include <vector>
 #include "token.h"
@@ -57,6 +57,13 @@ public:
         return str;
     }
 
+    bool operator==(const Program& other_program) const
+    {
+        if(to_string() == other_program.to_string())   
+            return true;
+        return false;
+    }
+
     ~Program()
     {
         for(auto s : statements)
@@ -81,16 +88,22 @@ public:
 class LetStatement : public Statement
 {
 public:
-    Identifier name;
+    Identifier* name;
     Expression value;
     LetStatement() = default;
-    explicit LetStatement(const Token& token) : Statement(token) {}
-    explicit LetStatement(const Token& token, const Identifier& name, const Expression& value) 
+    explicit LetStatement(const Token& token) : Statement(token), name(nullptr) {}
+    explicit LetStatement(const Token& token, Identifier* name, const Expression& value) 
         : Statement(token), name(name), value(value) {}
 
     std::string to_string() const override
     {
-        return token_literal() + " " + name.to_string() + " = " + value.to_string() + ";";
+        return token_literal() + " " + name->to_string() + " = " + value.to_string() + ";";
+    }
+
+    ~LetStatement()
+    {
+        if(name)
+            delete name;
     }
 };
 
@@ -106,6 +119,42 @@ public:
     std::string to_string() const override
     {
         return token_literal() + " " + return_value.to_string() + ";";
+    }
+};
+
+class ExpressionStatement : public Statement
+{
+public:
+    Expression* expression;
+    ExpressionStatement() = default;
+    explicit ExpressionStatement(const Token& t) 
+        : Statement(t), expression(nullptr){}
+    explicit ExpressionStatement(const Token& t, Expression* e)
+        : Statement(t), expression(e) {}
+
+    std::string to_string() const override
+    {
+        return expression->to_string();
+    }
+
+    ~ExpressionStatement()
+    {
+        if(expression)
+            delete expression;
+    }
+};
+
+class Integer : public Expression
+{
+public:
+    int value;
+    explicit Integer(const Token& t) : Expression(t), value(0) {}
+    Integer(const Token& t, const int v) 
+        : Expression(t), value(v) {}
+
+    std::string to_string() const override
+    {
+        return std::to_string(value);
     }
 };
 #endif // AST_H
