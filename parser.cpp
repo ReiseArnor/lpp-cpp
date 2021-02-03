@@ -3,11 +3,15 @@
 #include "lexer.h"
 #include "token.h"
 #include <iostream>
+#include <map>
+#include <memory>
 #include <string>
 using namespace std;
 
 Parser::Parser(const Lexer& l) : lexer(l)
 {
+    prefix_parse_fns = register_prefix_fns();
+    //infix_parse_fns = register_infix_fns();
     advance_tokens();
     advance_tokens();
 }
@@ -33,17 +37,17 @@ Statement* Parser::parse_statement()
         return parse_let_statement();
     if(current_token.token_type == TokenType::RETURN)
         return parse_return_statement();
-    return nullptr;
+    return parse_expression_statements();
 }
 
 LetStatement* Parser::parse_let_statement()
 {
-    LetStatement* let_statement = new LetStatement(current_token);
+    auto let_statement = make_unique<LetStatement>(current_token);
 
     if(!expected_token(TokenType::IDENT))
         return nullptr;
     
-    let_statement->name = Identifier(current_token, current_token.literal);
+    let_statement->name = static_cast<Identifier*>(parse_identifier());
 
     if(!expected_token(TokenType::ASSIGN))
         return nullptr;
@@ -51,18 +55,43 @@ LetStatement* Parser::parse_let_statement()
     while(current_token.token_type != TokenType::SEMICOLON)
         advance_tokens();
 
-    return let_statement;
+    return let_statement.release();
 }
 
 ReturnStatement* Parser::parse_return_statement()
 {
-    ReturnStatement* return_statement = new ReturnStatement(current_token);
+    auto return_statement = make_unique<ReturnStatement>(current_token);
     advance_tokens();
 
     while (current_token.token_type != TokenType::SEMICOLON)
         advance_tokens();
 
-    return return_statement;
+    return return_statement.release();
+}
+
+ExpressionStatement* Parser::parse_expression_statements()
+{
+    auto expression_statement = make_unique<ExpressionStatement>(current_token);
+
+    expression_statement->expression = parse_expression(Precedence::LOWEST);
+    if(peek_token.token_type == TokenType::SEMICOLON)
+        advance_tokens();
+    
+    return expression_statement.release();
+}
+
+Expression* Parser::parse_expression(Precedence precedence)
+{
+    try
+    {
+        auto prefix_parse_fn = prefix_parse_fns[current_token.token_type];
+        auto left_expression = prefix_parse_fn();
+        return left_expression;
+    }
+    catch(...)
+    {
+        return nullptr;
+    } 
 }
 
 bool Parser::expected_token(const TokenType& tp)
@@ -95,3 +124,17 @@ void Parser::expected_token_error(const TokenType& tp)
     error.append(getNameForValue(enums_strings, peek_token.token_type) + "\n");
     errors_list.push_back(error);
 }
+
+PrefixParseFns Parser::register_prefix_fns()
+{
+    return {
+        { TokenType::IDENT, parse_identifier },
+        { TokenType::INT, parse_integer }
+    };
+}
+/*
+InfixParseFns Parser::register_infix_fns()
+{
+
+}
+*/
