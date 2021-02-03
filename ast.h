@@ -34,13 +34,14 @@ public:
 
 class Program : public ASTNode
 {
+    Program() = delete;
+    Program(const Program&) = delete;
+    Program& operator=(const Program&) = delete;
+
 public:
     std::vector<Statement*> statements;
 
     explicit Program(const std::vector<Statement*>& s) : statements(s) {}
-    Program() = default;
-    Program(const Program&) = default;
-    Program& operator=(const Program&) = default;
 
     std::string token_literal() const override 
     {

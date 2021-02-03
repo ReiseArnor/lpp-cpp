@@ -51,7 +51,7 @@ private:
 
 public:
     explicit Parser(const Lexer& l);
-    Program parse_program();
+    std::vector<Statement*> parse_program();
     std::vector<std::string>& errors();
 
 private:

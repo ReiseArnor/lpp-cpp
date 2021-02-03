@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 using namespace std;
 
 Parser::Parser(const Lexer& l) : lexer(l)
@@ -16,18 +17,17 @@ Parser::Parser(const Lexer& l) : lexer(l)
     advance_tokens();
 }
 
-Program Parser::parse_program()
+vector<Statement*> Parser::parse_program()
 {
     vector<Statement*> statements;
-    Program program(statements);
     while(current_token.token_type != TokenType::_EOF)
     {
         Statement* statement = parse_statement();
-        if(statement != nullptr)
-            program.statements.push_back(statement);
+        if(statement)
+            statements.push_back(statement);
         advance_tokens();
     }
-    return program; 
+    return statements; 
 }
 
 Statement* Parser::parse_statement()
