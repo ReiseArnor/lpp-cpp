@@ -13,7 +13,7 @@ TEST_CASE("Let statement", "[ast]")
     Program program = Program(vector<Statement*>{ 
                         new LetStatement(
                             Token(TokenType::LET, let),
-                            Identifier(
+                            new Identifier(
                                 Token(TokenType::IDENT, var1),
                                 var1
                             ),
@@ -45,4 +45,28 @@ TEST_CASE("Return statement", "[ast]")
     string program_str = program.to_string();
 
     REQUIRE(program_str == "regresa 100;");
+}
+
+TEST_CASE("Expression statement", "[ast]")
+{
+    Program program = Program(vector<Statement*>{
+                        new ExpressionStatement{
+                            Token(TokenType::IDENT, "foo", 3),
+                            new Identifier(
+                                Token(TokenType::IDENT, "foo", 3),
+                                "foo"
+                            )
+                        },
+                        new ExpressionStatement{
+                            Token(TokenType::INT, "5"),
+                            new Identifier(
+                                Token(TokenType::INT, "5"),
+                                "5"
+                            )
+                        }
+    });
+
+    string program_str = program.to_string();
+
+    REQUIRE(program_str == "foo5");
 }
