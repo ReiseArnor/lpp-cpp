@@ -52,7 +52,7 @@ TEST_CASE("Let statements", "[parser]")
     string str = "variable x = 5; variable y = 10; variable foo = 20;";
     Lexer lexer(str);
     Parser parser(lexer);
-    Program program = parser.parse_program();
+    Program program(parser.parse_program());
 
     REQUIRE(program.statements.size() == 3);
 
@@ -66,7 +66,7 @@ TEST_CASE("Identifiers", "[parser]")
     string str = "variable uno = 1; variable dies = 10; variable cien = 100;";
     Lexer lexer(str);
     Parser parser(lexer);
-    Program program = parser.parse_program();
+    Program program(parser.parse_program());
 
     const array<string, 3> names {"uno", "dies", "cien"};
 
@@ -79,7 +79,7 @@ TEST_CASE("Parse errors", "[parser]")
     string str = "variable x 5;";
     Lexer lexer(str);
     Parser parser(lexer);
-    Program program = parser.parse_program();
+    Program program(parser.parse_program());
 
     REQUIRE(parser.errors().size() == 1);
 }
@@ -89,7 +89,7 @@ TEST_CASE("Return statement", "[parser]")
     string str = "regresa 5; regresa foo;";
     Lexer lexer(str);
     Parser parser(lexer);
-    Program program = parser.parse_program();
+    Program program(parser.parse_program());
 
     CHECK(program.statements.size() == 2);
     for(auto& s : program.statements)
@@ -101,7 +101,7 @@ TEST_CASE("Identifier expression", "parser")
     string str = "foobar;";
     Lexer lexer(str);
     Parser parser(lexer);
-    Program program = parser.parse_program();
+    Program program(parser.parse_program());
 
     auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(0));
 
@@ -115,7 +115,7 @@ TEST_CASE("Integer expression", "[parser]")
     string str = "5;";
     Lexer lexer(str);
     Parser parser(lexer);
-    Program program = parser.parse_program();
+    Program program(parser.parse_program());
 
     test_program_statements(parser, program);
 

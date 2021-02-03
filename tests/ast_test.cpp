@@ -10,7 +10,7 @@ TEST_CASE("Let statement", "[ast]")
     string let = "variable";
     string var1 = "mi_var";
     string var2 = "otra_var";
-    Program program = Program(vector<Statement*>{ 
+    Program program(vector<Statement*>{ 
                         new LetStatement(
                             Token(TokenType::LET, let),
                             new Identifier(
@@ -33,7 +33,7 @@ TEST_CASE("Return statement", "[ast]")
 {
     string return_value = "regresa";
     string expression = "100";
-    Program program = Program(vector<Statement*>{
+    Program program(vector<Statement*>{
                         new ReturnStatement(
                             Token(TokenType::RETURN, return_value),
                             Expression(
@@ -49,7 +49,7 @@ TEST_CASE("Return statement", "[ast]")
 
 TEST_CASE("Expression statement", "[ast]")
 {
-    Program program = Program(vector<Statement*>{
+    Program program(vector<Statement*>{
                         new ExpressionStatement{
                             Token(TokenType::IDENT, "foo", 3),
                             new Identifier(
