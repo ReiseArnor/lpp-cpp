@@ -21,15 +21,15 @@ void test_program_statements(Parser& parser, const Program& program, int expecte
 void test_literal(Expression* expression, const char* expected_value)
 {
     auto identifier = static_cast<Identifier*>(expression);
-    REQUIRE(identifier->value == expected_value);
-    REQUIRE(identifier->token_literal() == expected_value);
+    CHECK(identifier->value == expected_value);
+    CHECK(identifier->token_literal() == expected_value);
 }
 
-void test_literal(Expression* expression, const int expected_value) 
+void test_literal(Expression* expression, const int expected_value)
 {
     auto integer = static_cast<Integer*>(expression); 
-    REQUIRE(integer->value == expected_value); 
-    REQUIRE(integer->token_literal() == to_string(expected_value));
+    CHECK(integer->value == expected_value); 
+    CHECK(integer->token_literal() == to_string(expected_value));
 }
 
 void test_literal(Expression* expression, const bool expected_value)
@@ -151,17 +151,17 @@ TEST_CASE("Integer expression", "[parser]")
 
 TEST_CASE("Prefix expression", "[parser]")
 {
-    string str = "!5; -15;";
+    string str = "!5; -15; !verdadero;";
     Lexer lexer(str);
     Parser parser(lexer);
     Program program(parser.parse_program());
 
-    test_program_statements(parser, program, 2);
+    test_program_statements(parser, program, 3);
     
-    const array<const string, 2> op { "!", "-" };
-    const array<const string, 2> right_expression { "5", "15" };
+    const array<const string, 3> op { "!", "-", "!" };
+    const array<const string, 3> right_expression { "5", "15", "verdadero" };
     
-    for(size_t i = 0; i < 2; i++)
+    for(size_t i = 0; i < 3; i++)
     {
         auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(i));
         auto prefix_expression = static_cast<Prefix*>(expression_statement->expression);
@@ -173,12 +173,22 @@ TEST_CASE("Prefix expression", "[parser]")
 
 TEST_CASE("Infix expression", "[parser]")
 {
-    string str = "  5 + 5; 5 - 5; 5 * 5; 5 / 5; 5 > 5; 5 < 5; 5 == 5; 5 != 5;";
+    string str = "  5 + 5;\
+                    5 - 5;\
+                    5 * 5;\
+                    5 / 5;\
+                    5 > 5;\
+                    5 < 5;\
+                    5 == 5;\
+                    5 != 5;\
+                    verdadero == verdadero;\
+                    falso == falso;\
+                    verdadero != falso;";
     Lexer lexer(str);
     Parser parser(lexer);
     Program program(parser.parse_program());
 
-    test_program_statements(parser, program, 8);
+    test_program_statements(parser, program, 11);
 
     const vector<tuple<int,string,int>> expected_operators_and_values{
         {5, "+", 5},
@@ -191,16 +201,36 @@ TEST_CASE("Infix expression", "[parser]")
         {5, "!=", 5}
     };
 
-    for(size_t i = 0; i < 7; i++)
+    const vector<tuple<bool,string,bool>> expected_operators_and_booleans{
+        {true, "==", true},
+        {false, "==", false},
+        {true, "!=", false}
+    };
+
+    for(size_t i = 0; i < 8; i++)
     {
         auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(i));
         auto tuple = expected_operators_and_values.at(i);
 
         test_infix_expression(
             expression_statement->expression,
-            std::get<0>(tuple),
-            std::get<1>(tuple),
-            std::get<2>(tuple));
+            get<0>(tuple),
+            get<1>(tuple),
+            get<2>(tuple));
+    }
+
+    size_t tuple_count = 0;
+    for(size_t i = 8; i < 11; i++)
+    {
+        auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(i));
+        auto tuple = expected_operators_and_booleans.at(tuple_count);
+
+        test_infix_expression(
+            expression_statement->expression,
+            get<0>(tuple),
+            get<1>(tuple),
+            get<2>(tuple));
+        tuple_count++;
     }
 }
 
@@ -220,5 +250,32 @@ TEST_CASE("Boolean expression", "[parser]")
         auto expression_statement =static_cast<ExpressionStatement*>(program.statements.at(i));
 
         test_literal(expression_statement->expression, expected_values[i]);
+    }
+}
+
+TEST_CASE("Operator precedence", "[parser]")
+{
+    const vector<tuple<string, string, int>> test_sources = {
+        {"-a * b;", "((-a) * b)", 1},
+        {"!-a;", "(!(-a))", 1},
+        {"a + b / c;", "(a + (b / c))", 1},
+        {"3 + 4; -5 * 5;", "(3 + 4)((-5) * 5)", 2},
+        {"2 / 2 + 1 * 1;", "((2 / 2) + (1 * 1))", 1},
+        {"2 * 2 / 2 * 2;", "(((2 * 2) / 2) * 2)", 1},
+        {"2 / 2 * 2 / 2;", "(((2 / 2) * 2) / 2)", 1},
+        {"!5;","(!5)", 1},
+        {"-i * a / 5 + -7;", "((((-i) * a) / 5) + (-7))", 1}
+    };
+
+    for(size_t i = 0; i < test_sources.size(); i++)
+    {
+        auto tuple = test_sources.at(i);
+        Lexer lexer(get<0>(tuple));
+        Parser parser(lexer);
+        Program program(parser.parse_program());
+
+        test_program_statements(parser, program, get<2>(tuple));
+        cout << program.to_string();
+        REQUIRE(program.to_string() == get<1>(tuple));
     }
 }
