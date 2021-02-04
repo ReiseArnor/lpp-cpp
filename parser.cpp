@@ -140,6 +140,8 @@ void Parser::expected_token_error(const TokenType& tp)
 PrefixParseFns Parser::register_prefix_fns()
 {
     return {
+        { TokenType::_FALSE, parse_boolean },
+        { TokenType::_TRUE, parse_boolean },
         { TokenType::IDENT, parse_identifier },
         { TokenType::INT, parse_integer },
         { TokenType::MINUS, parse_prefix_expression },

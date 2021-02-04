@@ -106,6 +106,17 @@ private:
         return prefix_expression.release();
     };
 
+    PrefixParseFn parse_boolean = [&]() -> Expression*
+    {
+        try{
+            return new Boolean(current_token, current_token.token_type == TokenType::_TRUE);
+        } catch(const std::bad_alloc& e)
+        {
+            errors_list.push_back("No se ha podido reservar espacio en memoria.");
+            return nullptr;
+        }
+    };
+
     InfixParseFn parse_infix_expression = [&](Expression* left) -> Expression*
     {
         auto infix = std::make_unique<Infix>(current_token, left, current_token.literal);

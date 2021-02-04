@@ -204,4 +204,17 @@ public:
         delete left;
     }
 };
+
+class Boolean : public Expression
+{
+public:
+    bool value;
+    Boolean(const Token& t) : Expression(t) {}
+    Boolean(const Token& t, const bool v) : Expression(t), value(v) {}
+
+    std::string to_string() const override
+    {
+        return token_literal();
+    }
+};
 #endif // AST_H
