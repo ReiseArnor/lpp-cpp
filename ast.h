@@ -158,4 +158,50 @@ public:
         return std::to_string(value);
     }
 };
+
+class Prefix : public Expression
+{
+public:
+    std::string operatr;
+    Expression* right;
+    Prefix(const Token& t, const std::string& op)
+        : Expression(t), operatr(op), right(nullptr) {}
+    Prefix(const Token& t, const std::string& op, Expression* e)
+        : Expression(t), operatr(op), right(e) {} 
+
+    std::string to_string() const override
+    {
+        return operatr + right->to_string();
+    }
+
+    ~Prefix()
+    {
+        if(right)
+            delete right;
+    }
+};
+
+class Infix : public Expression
+{
+public:
+    Expression* right;
+    Expression* left;
+    std::string operatr;
+    Infix(const Token& t, Expression* l, const std::string& op)
+        : Expression(t), left(l), operatr(op), right(nullptr) {}
+    Infix(const Token& t, Expression* l, const std::string& op, Expression* r)
+        : Expression(t), left(l), operatr(op), right(r) {}
+
+    std::string to_string() const override
+    {
+        return left->to_string() + " " + operatr + " " + right->to_string();
+    }
+
+    ~Infix()
+    {
+        if(right)
+            delete right;
+        delete left;
+    }
+};
 #endif // AST_H
