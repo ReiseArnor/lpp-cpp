@@ -3,13 +3,17 @@
 #include "../parser.h"
 #include <array>
 #include <cstddef>
+#include <iostream>
 #include <string>
+#include <tuple>
 #include <vector>
 #include "catch2/catch.hpp"
 using namespace std;
 
 void test_program_statements(Parser& parser, const Program& program, int expected_statement_count = 1)
 {
+    for(auto& e : parser.errors())
+        cout << e;
     REQUIRE(parser.errors().size() == 0);
     REQUIRE(program.statements.size() == expected_statement_count);
 }
@@ -26,6 +30,20 @@ void test_literal(Expression* expression, const int expected_value)
     auto integer = static_cast<Integer*>(expression); 
     REQUIRE(integer->value == expected_value); 
     REQUIRE(integer->token_literal() == to_string(expected_value));
+}
+
+template<typename T>
+void test_infix_expression(
+    Expression* expression,
+    const T& expected_left, 
+    const string& expected_operator,
+    const T& expected_right
+    )
+{
+    auto infix = static_cast<Infix*>(expression);
+    test_literal(infix->left, expected_left);
+    REQUIRE(infix->operatr == expected_operator);
+    test_literal(infix->right, expected_right);
 }
 /*
 Can't parse expressions inside let statements yet!
@@ -122,4 +140,59 @@ TEST_CASE("Integer expression", "[parser]")
     auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(0));
     
     test_literal(expression_statement->expression, 5);
+}
+
+TEST_CASE("Prefix expression", "[parser]")
+{
+    string str = "!5; -15;";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    test_program_statements(parser, program, 2);
+    
+    const array<const string, 2> op { "!", "-" };
+    const array<const string, 2> right_expression { "5", "15" };
+    
+    for(size_t i = 0; i < 2; i++)
+    {
+        auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(i));
+        auto prefix_expression = static_cast<Prefix*>(expression_statement->expression);
+
+        REQUIRE(prefix_expression->token_literal() == op.at(i));
+        REQUIRE(prefix_expression->right->token_literal() == right_expression.at(i));
+    }
+}
+
+TEST_CASE("Infix expression", "[parser]")
+{
+    string str = "  5 + 5; 5 - 5; 5 * 5; 5 / 5; 5 > 5; 5 < 5; 5 == 5; 5 != 5;";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    test_program_statements(parser, program, 8);
+
+    const vector<tuple<int,string,int>> expected_operators_and_values{
+        {5, "+", 5},
+        {5, "-", 5},
+        {5, "*", 5},
+        {5, "/", 5},
+        {5, ">", 5},
+        {5, "<", 5},
+        {5, "==", 5},
+        {5, "!=", 5}
+    };
+
+    for(size_t i = 0; i < 7; i++)
+    {
+        auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(i));
+        auto tuple = expected_operators_and_values.at(i);
+
+        test_infix_expression(
+            expression_statement->expression,
+            std::get<0>(tuple),
+            std::get<1>(tuple),
+            std::get<2>(tuple));
+    }
 }
