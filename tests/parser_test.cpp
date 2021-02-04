@@ -18,7 +18,7 @@ void test_program_statements(Parser& parser, const Program& program, int expecte
     REQUIRE(program.statements.size() == expected_statement_count);
 }
 
-void test_literal(Expression* expression, const string& expected_value)
+void test_literal(Expression* expression, const char* expected_value)
 {
     auto identifier = static_cast<Identifier*>(expression);
     REQUIRE(identifier->value == expected_value);
@@ -30,6 +30,13 @@ void test_literal(Expression* expression, const int expected_value)
     auto integer = static_cast<Integer*>(expression); 
     REQUIRE(integer->value == expected_value); 
     REQUIRE(integer->token_literal() == to_string(expected_value));
+}
+
+void test_literal(Expression* expression, const bool expected_value)
+{
+    auto boolean = static_cast<Boolean*>(expression); 
+    CHECK(boolean->value == expected_value);
+    CHECK(boolean->token_literal() == (expected_value ? "verdadero" : "falso"));
 }
 
 template<typename T>
@@ -194,5 +201,24 @@ TEST_CASE("Infix expression", "[parser]")
             std::get<0>(tuple),
             std::get<1>(tuple),
             std::get<2>(tuple));
+    }
+}
+
+TEST_CASE("Boolean expression", "[parser]")
+{
+    string str = "verdadero; falso;";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    test_program_statements(parser, program, 2);
+
+    const array<bool, 2> expected_values { true, false };
+    
+    for(size_t i = 0; i < 2; i++)
+    {
+        auto expression_statement =static_cast<ExpressionStatement*>(program.statements.at(i));
+
+        test_literal(expression_statement->expression, expected_values[i]);
     }
 }
