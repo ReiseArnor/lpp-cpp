@@ -171,7 +171,7 @@ public:
 
     std::string to_string() const override
     {
-        return operatr + right->to_string();
+        return "(" + operatr + right->to_string() + ")";
     }
 
     ~Prefix()
@@ -194,7 +194,7 @@ public:
 
     std::string to_string() const override
     {
-        return left->to_string() + " " + operatr + " " + right->to_string();
+        return "(" + left->to_string() + " " + operatr + " " + right->to_string() + ")";
     }
 
     ~Infix()
