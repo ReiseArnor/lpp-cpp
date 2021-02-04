@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 using namespace std;
@@ -12,7 +13,7 @@ using namespace std;
 Parser::Parser(const Lexer& l) : lexer(l)
 {
     prefix_parse_fns = register_prefix_fns();
-    //infix_parse_fns = register_infix_fns();
+    infix_parse_fns = register_infix_fns();
     advance_tokens();
     advance_tokens();
 }
@@ -86,10 +87,21 @@ Expression* Parser::parse_expression(Precedence precedence)
     {
         auto prefix_parse_fn = prefix_parse_fns[current_token.token_type];
         auto left_expression = prefix_parse_fn();
+
+        while (peek_token.token_type != TokenType::SEMICOLON && precedence < peek_precedence()) 
+        {
+            auto infix_parse_fn = infix_parse_fns[peek_token.token_type];
+            advance_tokens();
+            if(left_expression)
+                left_expression = infix_parse_fn(left_expression);
+        }
         return left_expression;
     }
     catch(...)
     {
+        string error = "No se encontró ninguna función para parsear ";
+        error.append(current_token.literal + "\n");
+        errors_list.push_back(error);
         return nullptr;
     } 
 }
@@ -129,12 +141,41 @@ PrefixParseFns Parser::register_prefix_fns()
 {
     return {
         { TokenType::IDENT, parse_identifier },
-        { TokenType::INT, parse_integer }
+        { TokenType::INT, parse_integer },
+        { TokenType::MINUS, parse_prefix_expression },
+        { TokenType::NEGATION, parse_prefix_expression }
     };
 }
-/*
+
 InfixParseFns Parser::register_infix_fns()
 {
-
+    return {
+        
+        { TokenType::PLUS, parse_infix_expression },
+        { TokenType::MINUS, parse_infix_expression },
+        { TokenType::DIVISION, parse_infix_expression },
+        { TokenType::MULTIPLICATION, parse_infix_expression },
+        { TokenType::EQ, parse_infix_expression },
+        { TokenType::NOT_EQ, parse_infix_expression },
+        { TokenType::LT, parse_infix_expression },
+        { TokenType::GT, parse_infix_expression }
+    };
 }
-*/
+
+Precedence Parser::current_precedence()
+{
+    try{
+    return PRECEDENCES.at(current_token.token_type);
+    } catch(const out_of_range& e) {
+        return Precedence::LOWEST;
+    }
+}
+
+Precedence Parser::peek_precedence()
+{
+    try{
+    return PRECEDENCES.at(peek_token.token_type);
+    } catch(const out_of_range& e) {
+        return Precedence::LOWEST;
+    }
+}
