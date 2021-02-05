@@ -20,7 +20,7 @@ jobs:
       
     - name: Test
       working-directory: ./build
-      run: ctest --output-on-failure
+      run: ctest -VV
       
   build_osx:
     runs-on: macos-latest
@@ -39,7 +39,7 @@ jobs:
 
     - name: Test
       working-directory: ./build
-      run: ctest --output-on-failure
+      run: ctest -VV
 
   build_windows:
     runs-on: windows-latest
@@ -59,4 +59,4 @@ jobs:
 
     - name: Test
       working-directory: .\build
-      run: ctest --output-on-failure
+      run: ctest -VV
