@@ -117,6 +117,17 @@ private:
         }
     };
 
+    PrefixParseFn parse_grouped_expression = [&]() -> Expression*
+    {
+        advance_tokens();
+        auto expression = std::unique_ptr<Expression>(parse_expression(Precedence::LOWEST));
+        
+        if (!expected_token(TokenType::RPAREN))
+            return nullptr;
+        
+        return expression.release();
+    };
+
     InfixParseFn parse_infix_expression = [&](Expression* left) -> Expression*
     {
         auto infix = std::make_unique<Infix>(current_token, left, current_token.literal);

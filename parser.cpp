@@ -145,7 +145,8 @@ PrefixParseFns Parser::register_prefix_fns()
         { TokenType::IDENT, parse_identifier },
         { TokenType::INT, parse_integer },
         { TokenType::MINUS, parse_prefix_expression },
-        { TokenType::NEGATION, parse_prefix_expression }
+        { TokenType::NEGATION, parse_prefix_expression },
+        { TokenType::LPAREN, parse_grouped_expression }
     };
 }
 

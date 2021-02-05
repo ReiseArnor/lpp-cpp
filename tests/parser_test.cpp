@@ -264,7 +264,15 @@ TEST_CASE("Operator precedence", "[parser]")
         {"2 * 2 / 2 * 2;", "(((2 * 2) / 2) * 2)", 1},
         {"2 / 2 * 2 / 2;", "(((2 / 2) * 2) / 2)", 1},
         {"!5;","(!5)", 1},
-        {"-i * a / 5 + -7;", "((((-i) * a) / 5) + (-7))", 1}
+        {"-i * a / 5 + -7;", "((((-i) * a) / 5) + (-7))", 1},
+        {"verdadero;", "verdadero", 1},
+        {"falso;", "falso", 1},
+        {"3 > 5 == verdadero;", "((3 > 5) == verdadero)", 1},
+        {"3 < 5 == falso;", "((3 < 5) == falso)", 1},
+        {"1 + (2 + 3) + 4;", "((1 + (2 + 3)) + 4)", 1},
+        {"(5 + 5) * 2;", "((5 + 5) * 2)", 1},
+        {"2 / (5 + 5);", "(2 / (5 + 5))", 1},
+        {"-(5 + 5);", "(-(5 + 5))", 1}
     };
 
     for(size_t i = 0; i < test_sources.size(); i++)
@@ -275,7 +283,6 @@ TEST_CASE("Operator precedence", "[parser]")
         Program program(parser.parse_program());
 
         test_program_statements(parser, program, get<2>(tuple));
-        cout << program.to_string();
         REQUIRE(program.to_string() == get<1>(tuple));
     }
 }
