@@ -286,3 +286,47 @@ TEST_CASE("Operator precedence", "[parser]")
         REQUIRE(program.to_string() == get<1>(tuple));
     }
 }
+
+TEST_CASE("If statement", "[parser]")
+{
+    string str = "si (x < y) { z }";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    test_program_statements(parser, program);
+
+    auto if_expression = static_cast<If*>(static_cast<ExpressionStatement*>(program.statements.at(0))->expression);
+
+    test_infix_expression(if_expression->condition, "x", "<", "y");
+
+    REQUIRE(if_expression->consequence->statements.size() == 1);
+
+    auto consequence_statement = static_cast<ExpressionStatement*>(if_expression->consequence->statements.at(0));
+
+    test_literal(consequence_statement->expression, "z");
+
+    REQUIRE(if_expression->alternative == nullptr);
+}
+
+
+TEST_CASE("Else statement", "[parser]")
+{
+    string str = "si (x < y) { z } si_no { w }";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    test_program_statements(parser, program);
+
+    auto if_expression = static_cast<If*>(static_cast<ExpressionStatement*>(program.statements.at(0))->expression);
+    test_infix_expression(if_expression->condition, "x", "<", "y");
+
+    REQUIRE(if_expression->consequence->statements.size() == 1);
+    auto consequence_statement = static_cast<ExpressionStatement*>(if_expression->consequence->statements.at(0));
+    test_literal(consequence_statement->expression, "z");
+
+    REQUIRE(if_expression->alternative->statements.size() == 1);
+    auto alternative_statement = static_cast<ExpressionStatement*>(if_expression->alternative->statements.at(0));
+    test_literal(alternative_statement->expression, "w");
+}

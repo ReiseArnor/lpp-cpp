@@ -217,4 +217,58 @@ public:
         return token_literal();
     }
 };
+
+class Block : public Statement
+{
+public:
+    std::vector<Statement*> statements;
+    Block(const Token& t, const std::vector<Statement*>& vs)
+        : Statement(t), statements(vs) {}
+
+    std::string to_string() const override
+    {
+        std::string out;
+        for(auto s : statements)
+            out.append(s->to_string());
+        return out;
+    }
+
+    ~Block()
+    {
+        for(auto s : statements)
+            delete s;
+    }
+};
+
+class If : public Expression
+{
+public:
+    Expression* condition;
+    Block* consequence;
+    Block* alternative;
+    If(const Token& t)
+        : Expression(t), condition(nullptr), consequence(nullptr), alternative(nullptr) {}
+    If(const Token& t, Expression* cond, Block* cons)
+        : Expression(t), condition(cond), consequence(cons), alternative(nullptr) {}
+    If(const Token& t, Expression* cond, Block* cons, Block* alt)
+        : Expression(t), condition(cond), consequence(cons), alternative(alt) {}
+
+    std::string to_string() const override
+    {
+        std::string out = "si " + condition->to_string() + " " + consequence->to_string();
+        if(alternative)
+            out.append(" si_no" + alternative->to_string());
+        return out;
+    }
+
+    ~If()
+    {
+        if(condition)
+            delete condition;
+        if(consequence)
+            delete consequence;
+        if(alternative)
+            delete alternative;
+    }
+};
 #endif // AST_H

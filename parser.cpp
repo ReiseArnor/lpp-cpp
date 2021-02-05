@@ -106,6 +106,21 @@ Expression* Parser::parse_expression(Precedence precedence)
     } 
 }
 
+Block* Parser::parse_block()
+{
+    auto block_statement = make_unique<Block>(current_token, vector<Statement*>());
+    advance_tokens();
+    
+    while (current_token.token_type != TokenType::RBRACE && current_token.token_type != TokenType::_EOF)
+    {
+        auto statement = parse_statement();
+        if(statement)
+            block_statement->statements.push_back(statement);
+        advance_tokens();
+    }
+    return block_statement.release();
+}
+
 bool Parser::expected_token(const TokenType& tp)
 {
     if(peek_token.token_type == tp)
@@ -143,6 +158,7 @@ PrefixParseFns Parser::register_prefix_fns()
         { TokenType::_FALSE, parse_boolean },
         { TokenType::_TRUE, parse_boolean },
         { TokenType::IDENT, parse_identifier },
+        { TokenType::IF, parse_if },
         { TokenType::INT, parse_integer },
         { TokenType::MINUS, parse_prefix_expression },
         { TokenType::NEGATION, parse_prefix_expression },

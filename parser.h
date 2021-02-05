@@ -56,6 +56,7 @@ private:
     ReturnStatement* parse_return_statement();
     ExpressionStatement* parse_expression_statements();
     Expression* parse_expression(Precedence);
+    Block* parse_block();
     bool expected_token(const TokenType&);
     void advance_tokens();
     void expected_token_error(const TokenType&);
@@ -126,6 +127,34 @@ private:
             return nullptr;
         
         return expression.release();
+    };
+
+    PrefixParseFn parse_if = [&]() -> Expression*
+    {
+        auto if_expression = std::make_unique<If>(current_token);
+
+        if(!expected_token(TokenType::LPAREN))
+            return nullptr;
+        advance_tokens();
+
+        if_expression->condition = parse_expression(Precedence::LOWEST);
+
+        if(!expected_token(TokenType::RPAREN))
+            return nullptr;
+        
+        if(!expected_token(TokenType::LBRACE))
+            return nullptr;
+        if_expression->consequence = parse_block();
+
+        if(peek_token.token_type == TokenType::ELSE)
+        {
+            advance_tokens();
+            if(!expected_token(TokenType::LBRACE))
+                return nullptr;
+            if_expression->alternative = parse_block();
+        }
+
+        return if_expression.release();
     };
 
     InfixParseFn parse_infix_expression = [&](Expression* left) -> Expression*
