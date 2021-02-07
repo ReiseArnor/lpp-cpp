@@ -330,3 +330,51 @@ TEST_CASE("Else statement", "[parser]")
     auto alternative_statement = static_cast<ExpressionStatement*>(if_expression->alternative->statements.at(0));
     test_literal(alternative_statement->expression, "w");
 }
+
+TEST_CASE("Funtion literal", "[parser]")
+{
+    string str = "procedimiento(x, y) { x + y}";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    test_program_statements(parser, program);
+
+    auto function_literal = static_cast<Function*>(static_cast<ExpressionStatement*>(program.statements.at(0))->expression);
+
+    REQUIRE(function_literal->parameters.size() == 2);
+    test_literal(function_literal->parameters.at(0), "x");
+    test_literal(function_literal->parameters.at(1), "y");
+
+    REQUIRE(function_literal->body != nullptr);
+    REQUIRE(function_literal->body->statements.size() == 1);
+    
+    auto body = static_cast<ExpressionStatement*>(function_literal->body->statements.at(0));
+    test_infix_expression(body->expression, "x", "+", "y");
+}
+
+TEST_CASE("Function parameters", "[parser]")
+{
+    array<map<string, vector<const char*>>, 3> tests_array;
+    tests_array.at(0)["input"] = {"procedimiento() {}"};
+    tests_array.at(0)["expected_params"] = {};
+    tests_array.at(1)["input"] = {"procedimiento(x) {}"};
+    tests_array.at(1)["expected_params"] = {"x"};
+    tests_array.at(2)["input"] = {"procedimiento(x, y, z) {}"};
+    tests_array.at(2)["expected_params"] = {"x", "y,", "z"};
+
+    for(auto& test : tests_array)
+    {
+        Lexer lexer(test["input"].at(0));
+        Parser parser(lexer);
+        Program program(parser.parse_program());
+
+        auto funcion = static_cast<Function*>(static_cast<ExpressionStatement*>(program.statements.at(0))->expression);
+
+        for (size_t i = 0; i < test["expected_params"].size(); i++) 
+        {
+            test_literal(funcion->parameters.at(i), test["expected_params"].at(i));
+        }
+    }
+
+}
