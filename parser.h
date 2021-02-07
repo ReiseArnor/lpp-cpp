@@ -57,6 +57,7 @@ private:
     ExpressionStatement* parse_expression_statements();
     Expression* parse_expression(Precedence);
     Block* parse_block();
+    std::vector<Identifier*> parse_function_parameters();
     bool expected_token(const TokenType&);
     void advance_tokens();
     void expected_token_error(const TokenType&);
@@ -155,6 +156,21 @@ private:
         }
 
         return if_expression.release();
+    };
+
+    PrefixParseFn parse_function = [&]() -> Expression*
+    {
+        auto function = std::make_unique<Function>(current_token);
+        if(!expected_token(TokenType::LPAREN))
+            return nullptr;
+        function->parameters = parse_function_parameters();
+
+        if(!expected_token(TokenType::LBRACE))
+            return nullptr;
+        
+        function->body = parse_block();
+        
+        return function.release();
     };
 
     InfixParseFn parse_infix_expression = [&](Expression* left) -> Expression*

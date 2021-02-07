@@ -121,6 +121,32 @@ Block* Parser::parse_block()
     return block_statement.release();
 }
 
+vector<Identifier*> Parser::parse_function_parameters()
+{
+    vector<Identifier*> params;
+    if (peek_token.token_type == TokenType::RPAREN)
+    {
+        advance_tokens();
+        return params;
+    }
+    advance_tokens();
+    auto identifier = new Identifier(current_token, current_token.literal);
+    params.push_back(identifier);
+
+    while (peek_token.token_type == TokenType::COMMA) 
+    {
+        advance_tokens();
+        advance_tokens();
+        auto identifiers = new Identifier(current_token, current_token.literal);
+        params.push_back(identifiers);
+    }
+
+    if(!expected_token(TokenType::RPAREN))
+        return {};
+
+    return params;
+}
+
 bool Parser::expected_token(const TokenType& tp)
 {
     if(peek_token.token_type == tp)
@@ -155,6 +181,7 @@ void Parser::expected_token_error(const TokenType& tp)
 PrefixParseFns Parser::register_prefix_fns()
 {
     return {
+        { TokenType::FUNCTION, parse_function },
         { TokenType::_FALSE, parse_boolean },
         { TokenType::_TRUE, parse_boolean },
         { TokenType::IDENT, parse_identifier },

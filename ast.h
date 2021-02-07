@@ -209,7 +209,7 @@ class Boolean : public Expression
 {
 public:
     bool value;
-    Boolean(const Token& t) : Expression(t) {}
+    explicit Boolean(const Token& t) : Expression(t) {}
     Boolean(const Token& t, const bool v) : Expression(t), value(v) {}
 
     std::string to_string() const override
@@ -246,7 +246,7 @@ public:
     Expression* condition;
     Block* consequence;
     Block* alternative;
-    If(const Token& t)
+    explicit If(const Token& t)
         : Expression(t), condition(nullptr), consequence(nullptr), alternative(nullptr) {}
     If(const Token& t, Expression* cond, Block* cons)
         : Expression(t), condition(cond), consequence(cons), alternative(nullptr) {}
@@ -269,6 +269,33 @@ public:
             delete consequence;
         if(alternative)
             delete alternative;
+    }
+};
+
+class Function : public Expression 
+{
+public:
+    std::vector<Identifier*> parameters;
+    Block* body;
+    explicit Function(const Token& t, const std::vector<Identifier*>& p = {})
+        : Expression(t), parameters(p), body(nullptr) {}
+    Function(const Token& t, const std::vector<Identifier*>& p, Block* b)
+        :   Expression(t), parameters(p), body(b) {}
+
+    std::string to_string() const override
+    {
+        std::string params;
+        for(auto s : parameters)
+            params.append(s->to_string() + ",");
+        params.erase(params.size() - 1);
+        return token_literal() + "(" + params + ")" + "{" + body->to_string() + "}"; 
+    }
+
+    ~Function()
+    {
+        delete body;
+        for(auto p : parameters)
+            delete p;
     }
 };
 #endif // AST_H

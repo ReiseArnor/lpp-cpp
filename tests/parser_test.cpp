@@ -361,7 +361,7 @@ TEST_CASE("Function parameters", "[parser]")
     tests_array.at(1)["input"] = {"procedimiento(x) {}"};
     tests_array.at(1)["expected_params"] = {"x"};
     tests_array.at(2)["input"] = {"procedimiento(x, y, z) {}"};
-    tests_array.at(2)["expected_params"] = {"x", "y,", "z"};
+    tests_array.at(2)["expected_params"] = {"x", "y", "z"};
 
     for(auto& test : tests_array)
     {
