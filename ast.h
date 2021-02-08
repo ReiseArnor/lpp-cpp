@@ -286,8 +286,8 @@ public:
     {
         std::string params;
         for(auto s : parameters)
-            params.append(s->to_string() + ",");
-        params.erase(params.size() - 1);
+            params.append(s->to_string() + ", ");
+        params.erase(params.size() - 2, 2);
         return token_literal() + "(" + params + ")" + "{" + body->to_string() + "}"; 
     }
 
@@ -296,6 +296,33 @@ public:
         delete body;
         for(auto p : parameters)
             delete p;
+    }
+};
+
+class Call : public Expression
+{
+public:
+    Expression* function;
+    std::vector<Expression*> arguments;
+    Call(const Token& t, Expression* f)
+        : Expression(t), function(f) {}
+    Call(const Token& t, Expression* f, const std::vector<Expression*>& args)
+        : Expression(t), function(f), arguments(args) {}
+
+    std::string to_string() const override
+    {
+        std::string args;
+        for(auto arg : arguments)
+            args.append(arg->to_string() + ", ");
+        args.erase(args.size() - 2, 2);
+        return function->to_string() + "(" + args + ")";
+    }
+
+    ~Call()
+    {
+        delete function;
+        for(auto arg : arguments)
+            delete arg;
     }
 };
 #endif // AST_H

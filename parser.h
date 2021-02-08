@@ -38,7 +38,8 @@ static const std::map<const TokenType, const Precedence> PRECEDENCES
     { TokenType::PLUS, Precedence::SUM },
     { TokenType::MINUS, Precedence::SUM },
     { TokenType::DIVISION, Precedence::PRODUC },
-    { TokenType::MULTIPLICATION, Precedence::PRODUC }
+    { TokenType::MULTIPLICATION, Precedence::PRODUC },
+    { TokenType::LPAREN, Precedence::CALL }
 };
 
 class Parser
@@ -58,6 +59,7 @@ private:
     Expression* parse_expression(Precedence);
     Block* parse_block();
     std::vector<Identifier*> parse_function_parameters();
+    std::vector<Expression*> parse_call_arguments();
     bool expected_token(const TokenType&);
     void advance_tokens();
     void expected_token_error(const TokenType&);
@@ -182,6 +184,13 @@ private:
         infix->right = parse_expression(precedence);
 
         return infix.release();
+    };
+
+    InfixParseFn parse_call = [&](Expression* function) -> Expression*
+    {
+        auto call = std::make_unique<Call>(current_token, function);
+        call->arguments = parse_call_arguments();
+        return call.release();
     };
 };
 

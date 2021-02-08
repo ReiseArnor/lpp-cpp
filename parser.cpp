@@ -147,6 +147,35 @@ vector<Identifier*> Parser::parse_function_parameters()
     return params;
 }
 
+vector<Expression*> Parser::parse_call_arguments()
+{
+    auto arguments = vector<Expression*>();
+    if (peek_token.token_type == TokenType::RPAREN)
+    {
+        advance_tokens();
+        return arguments;
+    }
+
+    advance_tokens();
+
+    Expression* expression;
+    if ((expression = parse_expression(Precedence::LOWEST)))
+        arguments.push_back(expression);
+
+    while (peek_token.token_type == TokenType::COMMA) 
+    {
+        advance_tokens();
+        advance_tokens();
+        if ((expression = parse_expression(Precedence::LOWEST)))
+            arguments.push_back(expression);
+    }
+
+    if (!expected_token(TokenType::RPAREN))
+        return {};
+    
+    return arguments;
+}
+
 bool Parser::expected_token(const TokenType& tp)
 {
     if(peek_token.token_type == tp)
@@ -204,7 +233,8 @@ InfixParseFns Parser::register_infix_fns()
         { TokenType::EQ, parse_infix_expression },
         { TokenType::NOT_EQ, parse_infix_expression },
         { TokenType::LT, parse_infix_expression },
-        { TokenType::GT, parse_infix_expression }
+        { TokenType::GT, parse_infix_expression },
+        { TokenType::LPAREN, parse_call }
     };
 }
 

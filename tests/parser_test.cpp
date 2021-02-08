@@ -272,7 +272,11 @@ TEST_CASE("Operator precedence", "[parser]")
         {"1 + (2 + 3) + 4;", "((1 + (2 + 3)) + 4)", 1},
         {"(5 + 5) * 2;", "((5 + 5) * 2)", 1},
         {"2 / (5 + 5);", "(2 / (5 + 5))", 1},
-        {"-(5 + 5);", "(-(5 + 5))", 1}
+        {"-(5 + 5);", "(-(5 + 5))", 1},
+        {"a + suma(b * c) + d;", "((a + suma((b * c))) + d)", 1},
+        {"suma(a, b, 1, 2 * 3, 4 + 5, suma(6, 7 * 8));",
+            "suma(a, b, 1, (2 * 3), (4 + 5), suma(6, (7 * 8)))", 1},
+        {"suma(a + b + c * d / f + g);", "suma((((a + b) + ((c * d) / f)) + g))", 1}
     };
 
     for(size_t i = 0; i < test_sources.size(); i++)
@@ -377,4 +381,22 @@ TEST_CASE("Function parameters", "[parser]")
         }
     }
 
+}
+
+TEST_CASE("Call expression", "[parser]")
+{
+    string str = "suma(1, 2 * 3, 4 + 5);";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    test_program_statements(parser, program);
+
+    auto call = static_cast<Call*>(static_cast<ExpressionStatement*>(program.statements.at(0))->expression);
+    test_literal(call->function, "suma");
+
+    REQUIRE(call->arguments.size() == 3);
+    test_literal(call->arguments.at(0), 1);
+    test_infix_expression(call->arguments.at(1), 2, "*", 3);
+    test_infix_expression(call->arguments.at(2), 4, "+", 5);
 }
