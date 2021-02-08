@@ -53,7 +53,10 @@ LetStatement* Parser::parse_let_statement()
     if(!expected_token(TokenType::ASSIGN))
         return nullptr;
 
-    while(current_token.token_type != TokenType::SEMICOLON)
+    advance_tokens();
+    let_statement->value = parse_expression(Precedence::LOWEST);
+    
+    if(peek_token.token_type == TokenType::SEMICOLON)
         advance_tokens();
 
     return let_statement.release();
@@ -64,7 +67,9 @@ ReturnStatement* Parser::parse_return_statement()
     auto return_statement = make_unique<ReturnStatement>(current_token);
     advance_tokens();
 
-    while (current_token.token_type != TokenType::SEMICOLON)
+    return_statement->return_value = parse_expression(Precedence::LOWEST);
+
+    if(peek_token.token_type == TokenType::SEMICOLON)
         advance_tokens();
 
     return return_statement.release();

@@ -90,36 +90,44 @@ class LetStatement : public Statement
 {
 public:
     Identifier* name;
-    Expression value;
+    Expression* value;
     LetStatement() = default;
-    explicit LetStatement(const Token& token) : Statement(token), name(nullptr) {}
-    explicit LetStatement(const Token& token, Identifier* name, const Expression& value) 
+    explicit LetStatement(const Token& token) : Statement(token), name(nullptr), value(nullptr) {}
+    explicit LetStatement(const Token& token, Identifier* name, Expression* value)
         : Statement(token), name(name), value(value) {}
 
     std::string to_string() const override
     {
-        return token_literal() + " " + name->to_string() + " = " + value.to_string() + ";";
+        return token_literal() + " " + name->to_string() + " = " + value->to_string() + ";";
     }
 
     ~LetStatement()
     {
         if(name)
             delete name;
+        if(value)
+            delete value;
     }
 };
 
 class ReturnStatement : public Statement
 {
 public:
-    Expression return_value;
+    Expression* return_value;
     ReturnStatement() = default;
-    explicit ReturnStatement(const Token& t) : Statement(t) {}
-    explicit ReturnStatement(const Token& t, const Expression& rv)
+    explicit ReturnStatement(const Token& t) : Statement(t), return_value(nullptr) {}
+    explicit ReturnStatement(const Token& t, Expression* rv)
         : Statement(t), return_value(rv) {}
 
     std::string to_string() const override
     {
-        return token_literal() + " " + return_value.to_string() + ";";
+        return token_literal() + " " + return_value->to_string() + ";";
+    }
+
+    ~ReturnStatement()
+    {
+        if(return_value)
+            delete return_value;
     }
 };
 
