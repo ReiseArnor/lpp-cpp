@@ -17,7 +17,7 @@ TEST_CASE("Let statement", "[ast]")
                                 Token(TokenType::IDENT, var1),
                                 var1
                             ),
-                            Identifier(
+                            new Identifier(
                                 Token(TokenType::IDENT, var2),
                                 var2
                             )
@@ -36,7 +36,7 @@ TEST_CASE("Return statement", "[ast]")
     Program program(vector<Statement*>{
                         new ReturnStatement(
                             Token(TokenType::RETURN, return_value),
-                            Expression(
+                            new Expression(
                                 Token(TokenType::INT, expression)
                             )
                         )

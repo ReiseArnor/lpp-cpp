@@ -52,38 +52,47 @@ void test_infix_expression(
     REQUIRE(infix->operatr == expected_operator);
     test_literal(infix->right, expected_right);
 }
-/*
-Can't parse expressions inside let statements yet!
+
+
 TEST_CASE("Parse program", "[parser]")
 {
     string str = "variable x =5;";
     Lexer lexer(str);
     Parser parser(lexer);
+    Program program(parser.parse_program());
     Program expected_program{ vector<Statement*> {
                                 new LetStatement(
                                     Token(TokenType::LET, "variable", 8),
                                     new Identifier(
                                         Token(TokenType::IDENT, "x"),
                                         "x"),
-                                    Expression(Token(TokenType::INT, "5"))
+                                    new Expression(Token(TokenType::INT, "5"))
                                 )
     }};
 
-    REQUIRE(expected_program == parser.parse_program());
+    REQUIRE(program == expected_program);
 }
-*/
+
 TEST_CASE("Let statements", "[parser]")
 {
-    string str = "variable x = 5; variable y = 10; variable foo = 20;";
+    string str = "variable x = 5; variable y = 10; variable foo = 20; variable bar = verdadero";
     Lexer lexer(str);
     Parser parser(lexer);
     Program program(parser.parse_program());
 
-    REQUIRE(program.statements.size() == 3);
-
-    for(auto s : program.statements)
-        CHECK(s->token_literal() == "variable");
+    REQUIRE(program.statements.size() == 4);
+    auto expected_operators_and_values = vector<tuple<const char*,int>>{ {"x", 5}, {"y", 10}, {"foo", 20}, {"bar", true}};
     
+    for(size_t i = 0; i < 4; i++)
+    {
+        REQUIRE(program.statements.at(i)->token_literal() == "variable");
+        auto let_statement = static_cast<LetStatement*>(program.statements.at(i));
+
+        test_literal(let_statement->name, get<0>(expected_operators_and_values.at(i)));
+
+        i < 3 ? test_literal(let_statement->value, get<1>(expected_operators_and_values.at(i))) // for the ints
+            :   test_literal(let_statement->value, (bool)get<1>(expected_operators_and_values.at(i))); // for the bool
+    }
 }
 
 TEST_CASE("Identifiers", "[parser]")
@@ -111,14 +120,24 @@ TEST_CASE("Parse errors", "[parser]")
 
 TEST_CASE("Return statement", "[parser]")
 {
-    string str = "regresa 5; regresa foo;";
+    string str = "regresa 5; regresa foo; regresa verdadero; regresa falso;";
     Lexer lexer(str);
     Parser parser(lexer);
     Program program(parser.parse_program());
 
-    CHECK(program.statements.size() == 2);
-    for(auto& s : program.statements)
-        CHECK(s->token_literal() == "regresa");
+    REQUIRE(program.statements.size() == 4);
+    
+    auto statements = vector<ReturnStatement*>();
+    for(size_t i = 0; i < 4; i++)
+    {
+        REQUIRE(program.statements.at(i)->token_literal() == "regresa");
+        statements.push_back(static_cast<ReturnStatement*>(program.statements.at(i)));
+    }
+
+    test_literal(statements.at(0)->return_value, 5);
+    test_literal(statements.at(1)->return_value, "foo");
+    test_literal(statements.at(2)->return_value, true);
+    test_literal(statements.at(3)->return_value, false);
 }
 
 TEST_CASE("Identifier expression", "parser")
