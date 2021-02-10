@@ -13,7 +13,7 @@ jobs:
       run: mkdir build
     
     - name: Generating files
-      run: cmake -Bbuild -H.
+      run: cmake -DBUILD_TEST=ON -Bbuild -H.
       
     - name: Building
       run: cmake --build build/
@@ -32,7 +32,7 @@ jobs:
       run: mkdir build
     
     - name: Generating files
-      run: cmake -Bbuild -H.
+      run: cmake -DBUILD_TEST=ON -Bbuild -H.
       
     - name: Building
       run: cmake --build build/
@@ -52,7 +52,7 @@ jobs:
       run: mkdir build;
     
     - name: Generating files
-      run: cmake -G "Visual Studio 16 2019" -Bbuild
+      run: cmake -DBUILD_TEST=ON -G "Visual Studio 16 2019" -Bbuild
       
     - name: Building
       run: cmake --build build/ 
