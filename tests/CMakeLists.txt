@@ -15,9 +15,15 @@ set(ast_sources     tests_main.cpp
                     ../lexer.cpp
                     ../parser.cpp)
 
+set(eval_sources    tests_main.cpp
+                    evaluator_test.cpp
+                    ../lexer.cpp
+                    ../parser.cpp)
+
 add_executable(lexer_tests ${lexer_sources})
 add_executable(parser_tests ${parser_sources})
 add_executable(ast_tests ${ast_sources})
+add_executable(eval_tests ${eval_sources})
 
 Include(FetchContent)
 
@@ -31,7 +37,9 @@ FetchContent_MakeAvailable(Catch2)
 target_link_libraries(lexer_tests PRIVATE Catch2::Catch2)
 target_link_libraries(parser_tests PRIVATE Catch2::Catch2)
 target_link_libraries(ast_tests PRIVATE Catch2::Catch2)
+target_link_libraries(eval_tests PRIVATE Catch2::Catch2)
 
 add_test(lexer lexer_tests)
 add_test(parser parser_tests)
 add_test(ast ast_tests)
+add_test(evaluator eval_tests)
