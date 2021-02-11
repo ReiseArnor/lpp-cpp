@@ -2,6 +2,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "token.h"
+#include "evaluator.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -28,6 +29,10 @@ void start_repl()
             continue;
         }
 
-        cout << program.to_string() << "\n>> " ;
+        auto evaluated = evaluate(&program);
+
+        if(evaluated)
+            cout << evaluated->inspect();
+        cout << "\n>> ";
     }
 }
