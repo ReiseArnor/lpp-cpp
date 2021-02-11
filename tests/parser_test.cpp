@@ -9,6 +9,7 @@
 #include <vector>
 #include "catch2/catch.hpp"
 using namespace std;
+using namespace ast;
 
 void test_program_statements(Parser& parser, const Program& program, int expected_statement_count = 1)
 {

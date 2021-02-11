@@ -12,6 +12,21 @@
 #include <map>
 #include <memory>
 
+using ast::Expression;
+using ast::Statement;
+using ast::LetStatement;
+using ast::ReturnStatement;
+using ast::ExpressionStatement;
+using ast::Block;
+using ast::Identifier;
+using ast::Integer;
+using ast::Boolean;
+using ast::Prefix;
+using ast::Infix;
+using ast::If;
+using ast::Function;
+using ast::Call;
+
 using PrefixParseFn = std::function<Expression*()>;
 using InfixParseFn = std::function<Expression*(Expression*)>;
 

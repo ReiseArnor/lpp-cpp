@@ -4,6 +4,7 @@
 #include <vector>
 #include "catch2/catch.hpp"
 using namespace std;
+using namespace ast;
 
 TEST_CASE("Let statement", "[ast]")
 {

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 using namespace std;
+using ast::Program;
 
 void print_parser_errors(const vector<string>& errors)
 {

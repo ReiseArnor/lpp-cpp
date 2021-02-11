@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 using namespace std;
+using namespace ast;
 
 Parser::Parser(const Lexer& l) : lexer(l)
 {
