@@ -24,13 +24,13 @@ Object* evaluate_tests(const string& str)
     return evaluated;
 }
 
-void test_object(Object* evaluated, int expected)
+void test_object(Object* evaluated, const int expected)
 {
     auto eval = static_cast<obj::Integer*>(evaluated);
     REQUIRE(eval->value == expected);
 }
 
-void test_object(Object* evaluated, bool expected)
+void test_object(Object* evaluated, const bool expected)
 {
     auto eval = static_cast<obj::Boolean*>(evaluated);
     REQUIRE(eval->value == expected);
@@ -52,7 +52,16 @@ TEST_CASE("Integer evaluation", "[evaluator]")
         {"5", 5},
         {"10", 10},
         {"-5", -5},
-        {"-10", -10}
+        {"-10", -10},
+        {"5 + 5", 10},
+        {"5 - 10", -5},
+        {"2 * 2 * 2 * 2", 16},
+        {"2 * 5 - 3", 7},
+        {"50 / 2", 25},
+        {"2 * (5 - 3)", 4},
+        {"(2 + 7) / 3", 3},
+        {"50 / 2 * 2 + 10", 60},
+        {"5 / 2", 2}
     };
 
     eval_and_test_objects(tests);
@@ -62,7 +71,22 @@ TEST_CASE("Boolean evaluation", "[evaluator]")
 {
     vector<tuple<string, bool>> tests {
         {"verdadero", true},
-        {"falso", false}
+        {"falso", false},
+        {"1 < 2", true},
+        {"1 > 2", false},
+        {"1 < 1", false},
+        {"1 > 1", false},
+        {"1 == 1", true},
+        {"1 != 1", false},
+        {"1 != 2", true},
+        {"verdadero == verdadero", true},
+        {"falso == falso", true},
+        {"verdadero == falso", false},
+        {"verdadero != falso", true},
+        {"(1 < 2) == verdadero", true},
+        {"(1 < 2) == falso", false},
+        {"(1 > 2) == verdadero", false},
+        {"(1 > 2) == falso", true}
     };
 
     eval_and_test_objects(tests);
