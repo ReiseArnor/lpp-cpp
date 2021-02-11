@@ -30,6 +30,12 @@ void test_object(Object* evaluated, int expected)
     REQUIRE(eval->value == expected);
 }
 
+void test_object(Object* evaluated, bool expected)
+{
+    auto eval = static_cast<obj::Boolean*>(evaluated);
+    REQUIRE(eval->value == expected);
+}
+
 TEST_CASE("Integer evaluation", "[evaluator]")
 {
     vector<tuple<string, int>> tests {
@@ -44,3 +50,16 @@ TEST_CASE("Integer evaluation", "[evaluator]")
     }
 }
 
+TEST_CASE("Boolean evaluation", "[evaluator]")
+{
+    vector<tuple<string, bool>> tests {
+        {"verdadero", true},
+        {"falso", false}
+    };
+
+    for(auto& t : tests)
+    {
+        auto evaluated = evaluate_tests(get<0>(t));
+        test_object(evaluated, get<1>(t));
+    }
+}
