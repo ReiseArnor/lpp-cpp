@@ -36,18 +36,26 @@ void test_object(Object* evaluated, bool expected)
     REQUIRE(eval->value == expected);
 }
 
-TEST_CASE("Integer evaluation", "[evaluator]")
+template<typename T>
+void eval_and_test_objects(const vector<tuple<string, T>>& tests)
 {
-    vector<tuple<string, int>> tests {
-        {"5", 5},
-        {"10", 10}
-    };
-
     for(auto& t : tests)
     {
         auto evaluated = evaluate_tests(get<0>(t));
         test_object(evaluated, get<1>(t));
     }
+}
+
+TEST_CASE("Integer evaluation", "[evaluator]")
+{
+    vector<tuple<string, int>> tests {
+        {"5", 5},
+        {"10", 10},
+        {"-5", -5},
+        {"-10", -10}
+    };
+
+    eval_and_test_objects(tests);
 }
 
 TEST_CASE("Boolean evaluation", "[evaluator]")
@@ -57,9 +65,19 @@ TEST_CASE("Boolean evaluation", "[evaluator]")
         {"falso", false}
     };
 
-    for(auto& t : tests)
-    {
-        auto evaluated = evaluate_tests(get<0>(t));
-        test_object(evaluated, get<1>(t));
-    }
+    eval_and_test_objects(tests);
+}
+
+TEST_CASE("Bang operator", "[evaluator]")
+{
+    vector<tuple<string, bool>> tests {
+        {"!verdadero", false},
+        {"!falso", true},
+        {"!!verdadero", true},
+        {"!!falso", false},
+        {"!5", false},
+        {"!!5", true}
+    };
+
+    eval_and_test_objects(tests);
 }
