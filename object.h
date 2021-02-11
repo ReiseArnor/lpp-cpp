@@ -2,6 +2,8 @@
 #define OBJECT_H
 #include <string>
 
+namespace obj 
+{
 enum class ObjectType
 {
     BOOLEAN,
@@ -19,8 +21,8 @@ public:
 
 class Integer : public Object
 {
-    int value;
 public:
+    int value;
     explicit Integer(int v) : value(v) {}
     ObjectType type() override { return ObjectType::INTEGER; }
     std::string inspect() override { return std::to_string(value); }
@@ -28,8 +30,8 @@ public:
 
 class Boolean : public Object
 {
-    bool value;
 public:
+    bool value;
     explicit Boolean(bool v) : value(v) {}
     ObjectType type() override { return ObjectType::BOOLEAN; }
     std::string inspect() override { return value ? "verdadero" : "falso"; }
@@ -42,4 +44,5 @@ public:
     std::string inspect() override { return "nulo"; }
 };
 
+} // namespace obj
 #endif // OBJECT_H
