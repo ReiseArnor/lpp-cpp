@@ -5,6 +5,7 @@
 #include <vector>
 #include "token.h"
 
+namespace ast {
 class ASTNode
 {
 public:
@@ -333,4 +334,6 @@ public:
             delete arg;
     }
 };
+
+} // namespace ast
 #endif // AST_H
