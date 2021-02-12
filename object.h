@@ -8,7 +8,8 @@ enum class ObjectType
 {
     BOOLEAN,
     INTEGER,
-    _NULL
+    _NULL,
+    RETURN
 };
 
 class Object
@@ -42,6 +43,15 @@ class Null : public Object
 public:
     ObjectType type() override { return ObjectType::_NULL;}
     std::string inspect() override { return "nulo"; }
+};
+
+class Return : public Object
+{
+public:
+    Object* value;
+    explicit Return(Object* v) : value(v) {}
+    ObjectType type() override { return ObjectType::RETURN; }
+    std::string inspect() override { return value->inspect(); }
 };
 
 } // namespace obj

@@ -15,16 +15,18 @@ using ast::Infix;
 using obj::ObjectType;
 using ast::Block;
 using ast::If;
+using ast::ReturnStatement;
 
 const static auto TRUE = std::make_unique<obj::Boolean>(true);
 const static auto FALSE = std::make_unique<obj::Boolean>(false);
 const static auto _NULL = std::make_unique<obj::Null>();
 
-static Object* evaluate_statements(const std::vector<Statement*>&);
+static Object* evaluate_program(Program*);
 static Object* to_boolean_object(bool);
 static Object* evaluate_prefix_expression(const std::string&, Object*);
 static Object* evaluate_infix_expression(const std::string&, Object*, Object*);
 static Object* evaluate_if_expression(If*);
+static Object* evaluate_block_statements(Block*);
 
 static Object* evaluate(ASTNode* node)
 {
@@ -32,8 +34,7 @@ static Object* evaluate(ASTNode* node)
 
     if(node_type == typeid(Program).name())
     {
-        auto cast_node = dynamic_cast<Program*>(node);
-        return evaluate_statements(cast_node->statements);
+        return evaluate_program(dynamic_cast<Program*>(node));
     }
     else if(node_type == typeid(ExpressionStatement).name())
     {
@@ -74,22 +75,39 @@ static Object* evaluate(ASTNode* node)
     else if (node_type == typeid(ast::Block).name())
     {
         auto cast_node = dynamic_cast<Block*>(node);
-        return evaluate_statements(cast_node->statements);
+        return evaluate_block_statements(cast_node);
     }
     else if (node_type == typeid(ast::If).name()) 
     {
         auto cast_node = dynamic_cast<ast::If*>(node);
         return evaluate_if_expression(cast_node);
     }
+    else if(node_type == typeid(ReturnStatement).name())
+    {
+        auto cast_node = dynamic_cast<ReturnStatement*>(node);
+
+        assert(cast_node->return_value);
+        auto value = evaluate(cast_node->return_value);
+        assert(value);
+
+        return new obj::Return(value);
+    }
 
     return nullptr;
 }
 
-Object* evaluate_statements(const std::vector<Statement*>& statements)
+Object* evaluate_program(Program* program)
 {
     Object* result = nullptr;
-    for(auto s : statements)
+    for(auto s : program->statements)
+    {
         result = evaluate(s);
+        if(typeid(*result) == typeid(obj::Return))
+        {
+            auto cast_result = static_cast<obj::Return*>(result);
+            return cast_result->value;
+        }
+    }
 
     return result;
 }
@@ -121,6 +139,21 @@ Object* evaluate_if_expression(If* if_expression)
         return evaluate(if_expression->alternative);
     else
         return _NULL.get();
+}
+
+Object* evaluate_block_statements(Block* block)
+{
+    Object* result = nullptr;
+
+    for (auto statement : block->statements)
+    {
+        result = evaluate(statement);
+
+        if(result && result->type() == ObjectType::RETURN)
+            return result;
+    }
+
+    return result;
 }
 
 static Object* evaluate_bang_operator_expression(Object* right)

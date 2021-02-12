@@ -135,3 +135,24 @@ TEST_CASE("If else evaluation")
             test_object(evaluated, *get<1>(t));
     }
 }
+
+TEST_CASE("Return evaluation")
+{
+    vector<tuple<string, int>> tests {
+        {"regresa 10;", 10},
+        {"regresa 10; 9;", 10},
+        {"regresa 2 * 5; 9;", 10},
+        {"9; regresa 3 * 6; 9;", 18},
+        {"                          \
+            si (10 > 1) {           \
+                si (20 > 10) {      \
+                    regresa 1;      \
+                }                   \
+                                    \
+                regresa 0;          \
+            }                       \
+        ", 1}
+    };
+
+    eval_and_test_objects(tests);
+}
