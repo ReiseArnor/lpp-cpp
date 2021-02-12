@@ -36,6 +36,11 @@ void test_object(Object* evaluated, const bool expected)
     REQUIRE(eval->value == expected);
 }
 
+void test_object(Object* evaluated)
+{
+    REQUIRE(evaluated == _NULL.get());
+}
+
 template<typename T>
 void eval_and_test_objects(const vector<tuple<string, T>>& tests)
 {
@@ -104,4 +109,29 @@ TEST_CASE("Bang operator", "[evaluator]")
     };
 
     eval_and_test_objects(tests);
+}
+
+TEST_CASE("If else evaluation")
+{
+    int dies = 10;
+    int veinte = 20;
+    vector<tuple<string, int*>> tests {
+        {"si (verdadero) { 10 }", &dies},
+        {"si (falso) { 10 }", nullptr},
+        {"si (1) { 10 }", &dies},
+        {"si (1 < 2) { 10 }", &dies},
+        {"si (1 > 2) { 10 }", nullptr},
+        {"si (1 < 2) { 10 } si_no { 20 }", &dies},
+        {"si (1 > 2) { 10 } si_no { 20 }", &veinte}
+    };
+
+    for(auto& t : tests)
+    {
+        auto evaluated = evaluate_tests(get<0>(t));
+
+        if(get<1>(t) == nullptr)
+            test_object(evaluated);
+        else
+            test_object(evaluated, *get<1>(t));
+    }
 }

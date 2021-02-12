@@ -13,6 +13,8 @@ using ast::ExpressionStatement;
 using ast::Prefix;
 using ast::Infix;
 using obj::ObjectType;
+using ast::Block;
+using ast::If;
 
 const static auto TRUE = std::make_unique<obj::Boolean>(true);
 const static auto FALSE = std::make_unique<obj::Boolean>(false);
@@ -22,6 +24,7 @@ static Object* evaluate_statements(const std::vector<Statement*>&);
 static Object* to_boolean_object(bool);
 static Object* evaluate_prefix_expression(const std::string&, Object*);
 static Object* evaluate_infix_expression(const std::string&, Object*, Object*);
+static Object* evaluate_if_expression(If*);
 
 static Object* evaluate(ASTNode* node)
 {
@@ -29,44 +32,54 @@ static Object* evaluate(ASTNode* node)
 
     if(node_type == typeid(Program).name())
     {
-        auto new_node = dynamic_cast<Program*>(node);
-        return evaluate_statements(new_node->statements);
+        auto cast_node = dynamic_cast<Program*>(node);
+        return evaluate_statements(cast_node->statements);
     }
     else if(node_type == typeid(ExpressionStatement).name())
     {
-        auto new_node = dynamic_cast<ExpressionStatement*>(node);
-        return evaluate(new_node->expression);
+        auto cast_node = dynamic_cast<ExpressionStatement*>(node);
+        return evaluate(cast_node->expression);
     }
     else if(node_type == typeid(ast::Integer).name())
     {
-        auto new_node = dynamic_cast<ast::Integer*>(node);
-        return new obj::Integer(new_node->value);
+        auto cast_node = dynamic_cast<ast::Integer*>(node);
+        return new obj::Integer(cast_node->value);
     }
     else if(node_type == typeid(ast::Boolean).name())
     {
-        auto new_node = dynamic_cast<ast::Boolean*>(node);
-        return to_boolean_object(new_node->value);
+        auto cast_node = dynamic_cast<ast::Boolean*>(node);
+        return to_boolean_object(cast_node->value);
     }
     else if(node_type == typeid(Prefix).name())
     {
-        auto new_node = dynamic_cast<Prefix*>(node);
-        assert(new_node != nullptr);
+        auto cast_node = dynamic_cast<Prefix*>(node);
+        assert(cast_node != nullptr);
 
-        auto right = evaluate(new_node->right);
+        auto right = evaluate(cast_node->right);
         assert(right != nullptr);
 
-        return evaluate_prefix_expression(new_node->operatr, right);
+        return evaluate_prefix_expression(cast_node->operatr, right);
     }
     else if (node_type == typeid(Infix).name())
     {
-        auto new_node = dynamic_cast<Infix*>(node);
-        assert(new_node->left && new_node->right);
+        auto cast_node = dynamic_cast<Infix*>(node);
+        assert(cast_node->left && cast_node->right);
 
-        auto left = evaluate(new_node->left);
-        auto right = evaluate(new_node->right);
+        auto left = evaluate(cast_node->left);
+        auto right = evaluate(cast_node->right);
 
         assert(left && right);
-        return evaluate_infix_expression(new_node->operatr, left, right);
+        return evaluate_infix_expression(cast_node->operatr, left, right);
+    }
+    else if (node_type == typeid(ast::Block).name())
+    {
+        auto cast_node = dynamic_cast<Block*>(node);
+        return evaluate_statements(cast_node->statements);
+    }
+    else if (node_type == typeid(ast::If).name()) 
+    {
+        auto cast_node = dynamic_cast<ast::If*>(node);
+        return evaluate_if_expression(cast_node);
     }
 
     return nullptr;
@@ -79,6 +92,35 @@ Object* evaluate_statements(const std::vector<Statement*>& statements)
         result = evaluate(s);
 
     return result;
+}
+
+static bool is_truthy(Object* obj)
+{
+    if(obj == _NULL.get())
+        return false;
+    else if(obj == TRUE.get())
+        return true;
+    else if(obj == FALSE.get())
+        return false;
+    else
+        return true;
+}
+
+Object* evaluate_if_expression(If* if_expression)
+{
+    assert(if_expression->condition);
+    auto condicion = evaluate(if_expression->condition);
+    assert(condicion);
+
+    if(is_truthy(condicion))
+    {
+        assert(if_expression->consequence);
+        return evaluate(if_expression->consequence);
+    }
+    else if (if_expression->alternative)
+        return evaluate(if_expression->alternative);
+    else
+        return _NULL.get();
 }
 
 static Object* evaluate_bang_operator_expression(Object* right)
