@@ -10,6 +10,7 @@ private:
     char current_char;
     int read_position;
     int position;
+    int line;
 
     void read_character();
     Token read_identifier();

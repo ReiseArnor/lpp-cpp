@@ -86,11 +86,12 @@ class Token
 public:
     std::string literal;
     TokenType token_type;
+    int line;
 
     Token() = default;
-    Token(TokenType t, const char* l, std::size_t s = 1) : literal(l, s), token_type(t) {}
-    Token(TokenType t, const char* b, const char* e) : literal(b, e), token_type(t) {}
-    Token(TokenType t, const std::string& s) : literal(s), token_type(t) {}
+    Token(TokenType t, const char* l, int line = 1, std::size_t s = 1) : literal(l, s), token_type(t), line(line) {}
+    Token(TokenType t, const char* b, const char* e, int line = 1) : literal(b, e), token_type(t), line(line) {}
+    Token(TokenType t, const std::string& s, int line = 1) : literal(s), token_type(t), line(line) {}
 
     bool operator==(const Token& r) const noexcept
     {   

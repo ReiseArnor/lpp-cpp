@@ -8,14 +8,10 @@ using namespace std;
 bool is_indentation(char);
 bool is_number(char);
 bool is_identifier(char);
-bool skip_whitespace(char);
+bool skip_whitespace(char,int&);
 
-Lexer::Lexer(const string& src) : source(src) 
-{
-    current_char = ' ';
-    read_position = 0;
-    position = 0;
-}
+Lexer::Lexer(const string& src) 
+    : source(src), current_char(' '), read_position(0), position(0), line(1) {}
 
  void Lexer::read_character()
  // TODO switch to char pointers instead of ints
@@ -32,7 +28,7 @@ Lexer::Lexer(const string& src) : source(src)
  Token Lexer::next_token()
 {
     read_character();
-    while (skip_whitespace(current_char))
+    while (skip_whitespace(current_char, line))
         read_character();
 
     switch (current_char) 
@@ -104,41 +100,41 @@ Lexer::Lexer(const string& src) : source(src)
         case '=':
             if(peek_character() == '=') 
             {   read_position++;
-                return Token { TokenType::EQ, "==", 2 }; } 
-            return Token { TokenType::ASSIGN, &current_char };
+                return Token { TokenType::EQ, "==", line, 2 }; } 
+            return Token { TokenType::ASSIGN, &current_char, line };
         case '+':
-            return Token { TokenType::PLUS, &current_char };
+            return Token { TokenType::PLUS, &current_char, line };
         case '-':
-            return Token { TokenType::MINUS, &current_char };
+            return Token { TokenType::MINUS, &current_char, line };
         case '/':
-            return Token { TokenType::DIVISION, &current_char };
+            return Token { TokenType::DIVISION, &current_char, line };
         case '*':
-            return Token { TokenType::MULTIPLICATION, &current_char };
+            return Token { TokenType::MULTIPLICATION, &current_char, line };
         case '!':
             if(peek_character() == '=') 
             {   read_position++;
-                return Token { TokenType::NOT_EQ, "!=", 2 }; }
-            return Token { TokenType::NEGATION, &current_char };
+                return Token { TokenType::NOT_EQ, "!=", line, 2 }; }
+            return Token { TokenType::NEGATION, &current_char, line };
         case '<':
-            return Token { TokenType::LT, &current_char };
+            return Token { TokenType::LT, &current_char, line };
         case '>':
-            return Token { TokenType::GT, &current_char };
+            return Token { TokenType::GT, &current_char, line };
         case '(':
-            return Token { TokenType::LPAREN, &current_char };
+            return Token { TokenType::LPAREN, &current_char, line };
         case ')':
-            return Token { TokenType::RPAREN, &current_char };
+            return Token { TokenType::RPAREN, &current_char, line };
         case '{':
-            return Token { TokenType::LBRACE, &current_char };
+            return Token { TokenType::LBRACE, &current_char, line };
         case '}':
-            return Token { TokenType::RBRACE, &current_char };
+            return Token { TokenType::RBRACE, &current_char, line };
         case ',':
-            return Token { TokenType::COMMA, &current_char };
+            return Token { TokenType::COMMA, &current_char, line };
         case ';':
-            return Token { TokenType::SEMICOLON, &current_char };
+            return Token { TokenType::SEMICOLON, &current_char, line };
         case '\0':
-            return Token { TokenType::_EOF, &current_char };
+            return Token { TokenType::_EOF, &current_char, line };
         default:
-            return Token { TokenType::ILLEGAL, &current_char };
+            return Token { TokenType::ILLEGAL, &current_char, line };
     }
 }
 
@@ -163,7 +159,7 @@ Token Lexer::read_number()
     else end = &source.at(position);
     read_position = position;
 
-    return Token { TokenType::INT, begin, end };
+    return Token { TokenType::INT, begin, end, line };
 }
 
 Token Lexer::keyword(const string& s) const
@@ -179,9 +175,9 @@ Token Lexer::keyword(const string& s) const
     };
 
     if(keywords.find(s) != keywords.end())
-        return Token(keywords[s], s);
+        return Token(keywords[s], s, line);
     
-    return Token(TokenType::IDENT, s);
+    return Token(TokenType::IDENT, s, line);
 }
 
 char Lexer::peek_character() const
@@ -282,14 +278,15 @@ bool is_number(char c)
     }
 }
 
-bool skip_whitespace(char c)
+bool skip_whitespace(char c, int& line)
 {
     switch (c)
     {
+        case '\n':
+            line++;
+        case '\r':
         case ' ':
         case '\t':
-        case '\n':
-        case '\r':
             return true;
         default:
             return false;

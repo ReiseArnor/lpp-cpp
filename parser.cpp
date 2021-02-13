@@ -106,7 +106,7 @@ Expression* Parser::parse_expression(Precedence precedence)
     catch(...)
     {
         string error = "No se encontró ninguna función para parsear ";
-        error.append(current_token.literal + "\n");
+        error.append(current_token.literal + " cerca de la línea " + to_string(current_token.line) + "\n");
         errors_list.push_back(error);
         return nullptr;
     } 
@@ -209,7 +209,8 @@ void Parser::expected_token_error(const TokenType& tp)
     string error = "Se esperaba que el siguente token fuera ";
     error.append(getNameForValue(tokens_enums_strings, tp));
     error.append(" pero se obtuvo ");
-    error.append(getNameForValue(tokens_enums_strings, peek_token.token_type) + "\n");
+    error.append(getNameForValue(tokens_enums_strings, peek_token.token_type) 
+            + " cerca de la línea " + to_string(current_token.line) + "\n");
     errors_list.push_back(error);
 }
 

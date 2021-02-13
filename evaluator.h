@@ -31,9 +31,9 @@ static std::string format_error(const char* format, ...)
     return &vec[0];
 }
 
-static const char* TYPE_MISMATCH = "Discrepancia de tipos: %s %s %s";
-static const char* UNKNOWN_PREFIX_OPERATION = "Operador desconocido: %s%s";
-static const char* UNKNOWN_INFIX_OPERATION = "Operador desconocido: %s %s %s";
+static const char* TYPE_MISMATCH = "Discrepancia de tipos: %s %s %s cerca de la línea %d";
+static const char* UNKNOWN_PREFIX_OPERATION = "Operador desconocido: %s%s cerca de la línea %d";
+static const char* UNKNOWN_INFIX_OPERATION = "Operador desconocido: %s %s %s cerca de la línea %d";
 
 const static auto TRUE = std::make_unique<obj::Boolean>(true);
 const static auto FALSE = std::make_unique<obj::Boolean>(false);
@@ -41,8 +41,8 @@ const static auto _NULL = std::make_unique<obj::Null>();
 
 static Object* evaluate_program(Program*);
 static Object* to_boolean_object(bool);
-static Object* evaluate_prefix_expression(const std::string&, Object*);
-static Object* evaluate_infix_expression(const std::string&, Object*, Object*);
+static Object* evaluate_prefix_expression(const std::string&, Object*, const int);
+static Object* evaluate_infix_expression(const std::string&, Object*, Object*, const int);
 static Object* evaluate_if_expression(If*);
 static Object* evaluate_block_statements(Block*);
 
@@ -77,7 +77,7 @@ static Object* evaluate(ASTNode* node)
         auto right = evaluate(cast_node->right);
         assert(right != nullptr);
 
-        return evaluate_prefix_expression(cast_node->operatr, right);
+        return evaluate_prefix_expression(cast_node->operatr, right, cast_node->token.line);
     }
     else if (node_type == typeid(Infix).name())
     {
@@ -88,7 +88,7 @@ static Object* evaluate(ASTNode* node)
         auto right = evaluate(cast_node->right);
 
         assert(left && right);
-        return evaluate_infix_expression(cast_node->operatr, left, right);
+        return evaluate_infix_expression(cast_node->operatr, left, right, cast_node->token.line);
     }
     else if (node_type == typeid(ast::Block).name())
     {
@@ -127,7 +127,6 @@ Object* evaluate_program(Program* program)
         }
         else if (typeid(*result) == typeid(obj::Error)) 
             return result;
-        
     }
 
     return result;
@@ -190,34 +189,36 @@ static Object* evaluate_bang_operator_expression(Object* right)
         return FALSE.get();
 }
 
-static Object* evaluate_minus_operator_expression(Object* right)
+static Object* evaluate_minus_operator_expression(Object* right, const int line)
 {
     if(typeid(*right).name() != typeid(obj::Integer).name())
         return new Error{ format_error(
             UNKNOWN_PREFIX_OPERATION,
             "-",
-            right->type_string().c_str()
+            right->type_string().c_str(),
+            line
             ) };
     auto cast_right = dynamic_cast<obj::Integer*>(right);
 
     return new obj::Integer(-cast_right->value);
 }
 
-Object* evaluate_prefix_expression(const std::string& operatr, Object* right)
+Object* evaluate_prefix_expression(const std::string& operatr, Object* right, const int line)
 {
     if(operatr == "!")
         return evaluate_bang_operator_expression(right);
     else if(operatr == "-")
-        return evaluate_minus_operator_expression(right);
+        return evaluate_minus_operator_expression(right, line);
     else
         return new Error{ format_error(
                 UNKNOWN_PREFIX_OPERATION, 
                 operatr.c_str(), 
-                right->type_string().c_str()
+                right->type_string().c_str(),
+                line
                 ) };
 }
 
-static Object* evaluate_integer_infix_expression(const std::string& operatr, Object* left, Object* right)
+static Object* evaluate_integer_infix_expression(const std::string& operatr, Object* left, Object* right, const int line)
 {
     auto left_value = static_cast<obj::Integer*>(left)->value;
     auto right_value = static_cast<obj::Integer*>(right)->value;
@@ -243,14 +244,15 @@ static Object* evaluate_integer_infix_expression(const std::string& operatr, Obj
                 UNKNOWN_INFIX_OPERATION,
                 left->type_string().c_str(),
                 operatr.c_str(),
-                right->type_string().c_str()
+                right->type_string().c_str(),
+                line
                 ) };
 }
 
-Object* evaluate_infix_expression(const std::string& operatr, Object* left, Object* right)
+Object* evaluate_infix_expression(const std::string& operatr, Object* left, Object* right, const int line)
 {
     if(left->type() == ObjectType::INTEGER && right->type() == ObjectType::INTEGER)
-        return evaluate_integer_infix_expression(operatr, left, right);
+        return evaluate_integer_infix_expression(operatr, left, right, line);
     else if(operatr == "==")
         return to_boolean_object(
                 dynamic_cast<obj::Boolean*>(left)->value == 
@@ -266,14 +268,16 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
                 TYPE_MISMATCH,
                 left->type_string().c_str(),
                 operatr.c_str(),
-                right->type_string().c_str()
+                right->type_string().c_str(),
+                line
                 ) };
 
     return new Error{ format_error(
             UNKNOWN_INFIX_OPERATION,
             left->type_string().c_str(),
             operatr.c_str(),
-            right->type_string().c_str()
+            right->type_string().c_str(),
+            line
             ) };
 }
 
