@@ -36,6 +36,12 @@ void test_object(Object* evaluated, const bool expected)
     REQUIRE(eval->value == expected);
 }
 
+void test_object(Object* evaluated, const char* expected)
+{
+    auto eval = static_cast<obj::Error*>(evaluated);
+    REQUIRE(eval->message == expected);
+}
+
 void test_object(Object* evaluated)
 {
     REQUIRE(evaluated == _NULL.get());
@@ -152,6 +158,42 @@ TEST_CASE("Return evaluation")
                 regresa 0;          \
             }                       \
         ", 1}
+    };
+
+    eval_and_test_objects(tests);
+}
+
+TEST_CASE("Error handling")
+{
+    vector<tuple<string,const char*>> tests {
+        {"5 + verdadero", "Discrepancia de tipos: INTEGER + BOOLEAN"},
+        {"5 + verdadero; 9;", "Discrepancia de tipos: INTEGER + BOOLEAN"},
+        {"-verdadero", "Operador desconocido: -BOOLEAN"},
+        {"verdadero + falso", "Operador desconocido: BOOLEAN + BOOLEAN"},
+        {"5; verdadero - falso; 10;", "Operador desconocido: BOOLEAN - BOOLEAN"},
+        {"                                      \
+            si (10 > 7) {                       \
+                regresa verdadero + falso;      \
+            }",
+        "Operador desconocido: BOOLEAN + BOOLEAN"
+        },
+        {"                                      \
+            si (10 > 1) {                       \
+                si (verdadero) {                \
+                    regresa verdadero * falso;  \
+                }                               \
+                regresa 1;                      \
+            }",
+        "Operador desconocido: BOOLEAN * BOOLEAN"
+        },
+        {"                                      \
+            si (5 < 2) {                        \
+                regresa 1;                      \
+            } si_no {                           \
+                regresa verdadero / falso;      \
+            }",
+        "Operador desconocido: BOOLEAN / BOOLEAN"
+        }
     };
 
     eval_and_test_objects(tests);

@@ -5,10 +5,10 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <cstdarg>
 using obj::Object;
 using ast::ASTNode;
 using ast::Program;
-using ast::Statement;
 using ast::ExpressionStatement;
 using ast::Prefix;
 using ast::Infix;
@@ -16,6 +16,24 @@ using obj::ObjectType;
 using ast::Block;
 using ast::If;
 using ast::ReturnStatement;
+using obj::Error;
+
+static std::string format_error(const char* format, ...)
+{
+    va_list args;
+    va_start (args, format);
+    size_t len = std::vsnprintf(NULL, 0, format, args);
+    va_end (args);
+    std::vector<char> vec(len + 1);
+    va_start (args, format);
+    std::vsnprintf(&vec[0], len + 1, format, args);
+    va_end (args);
+    return &vec[0];
+}
+
+static const char* TYPE_MISMATCH = "Discrepancia de tipos: %s %s %s";
+static const char* UNKNOWN_PREFIX_OPERATION = "Operador desconocido: %s%s";
+static const char* UNKNOWN_INFIX_OPERATION = "Operador desconocido: %s %s %s";
 
 const static auto TRUE = std::make_unique<obj::Boolean>(true);
 const static auto FALSE = std::make_unique<obj::Boolean>(false);
@@ -107,6 +125,9 @@ Object* evaluate_program(Program* program)
             auto cast_result = static_cast<obj::Return*>(result);
             return cast_result->value;
         }
+        else if (typeid(*result) == typeid(obj::Error)) 
+            return result;
+        
     }
 
     return result;
@@ -149,7 +170,8 @@ Object* evaluate_block_statements(Block* block)
     {
         result = evaluate(statement);
 
-        if(result && result->type() == ObjectType::RETURN)
+        if(result && result->type() == ObjectType::RETURN
+            || result->type() == ObjectType::ERROR)
             return result;
     }
 
@@ -171,7 +193,11 @@ static Object* evaluate_bang_operator_expression(Object* right)
 static Object* evaluate_minus_operator_expression(Object* right)
 {
     if(typeid(*right).name() != typeid(obj::Integer).name())
-        return nullptr;
+        return new Error{ format_error(
+            UNKNOWN_PREFIX_OPERATION,
+            "-",
+            right->type_string().c_str()
+            ) };
     auto cast_right = dynamic_cast<obj::Integer*>(right);
 
     return new obj::Integer(-cast_right->value);
@@ -184,7 +210,11 @@ Object* evaluate_prefix_expression(const std::string& operatr, Object* right)
     else if(operatr == "-")
         return evaluate_minus_operator_expression(right);
     else
-        return _NULL.get();
+        return new Error{ format_error(
+                UNKNOWN_PREFIX_OPERATION, 
+                operatr.c_str(), 
+                right->type_string().c_str()
+                ) };
 }
 
 static Object* evaluate_integer_infix_expression(const std::string& operatr, Object* left, Object* right)
@@ -209,7 +239,12 @@ static Object* evaluate_integer_infix_expression(const std::string& operatr, Obj
     else if (operatr == "!=")
         return to_boolean_object(left_value != right_value);
     else
-        return _NULL.get();
+        return new Error{ format_error(
+                UNKNOWN_INFIX_OPERATION,
+                left->type_string().c_str(),
+                operatr.c_str(),
+                right->type_string().c_str()
+                ) };
 }
 
 Object* evaluate_infix_expression(const std::string& operatr, Object* left, Object* right)
@@ -226,8 +261,20 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
                 dynamic_cast<obj::Boolean*>(left)->value !=
                 dynamic_cast<obj::Boolean*>(right)->value
                 );
-    
-    return _NULL.get();
+    else if(left->type() != right->type())
+        return new Error{ format_error(
+                TYPE_MISMATCH,
+                left->type_string().c_str(),
+                operatr.c_str(),
+                right->type_string().c_str()
+                ) };
+
+    return new Error{ format_error(
+            UNKNOWN_INFIX_OPERATION,
+            left->type_string().c_str(),
+            operatr.c_str(),
+            right->type_string().c_str()
+            ) };
 }
 
 Object* to_boolean_object(bool value)
