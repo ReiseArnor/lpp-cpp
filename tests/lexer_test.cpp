@@ -69,7 +69,7 @@ TEST_CASE("EOF", "[lexer]")
             tokens.push_back(lexer.next_token());
 
         vector<Token> expected_tokens {
-            Token(TokenType::IDENT, "home", 4),
+            Token(TokenType::IDENT, "home", 1, 4),
             Token(TokenType::_EOF, "\0")
         };
 
@@ -84,7 +84,7 @@ TEST_CASE("EOF", "[lexer]")
             tokens.push_back(lexer.next_token());
 
         vector<Token> expected_tokens {
-            Token(TokenType::INT, "100", 3),
+            Token(TokenType::INT, "100", 1, 3),
             Token(TokenType::_EOF, "\0")
         };
 
@@ -121,8 +121,8 @@ TEST_CASE("Assignment", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens {
-        Token(TokenType::LET, "variable", 8),
-        Token(TokenType::IDENT, "cinco", 5),
+        Token(TokenType::LET, "variable", 1, 8),
+        Token(TokenType::IDENT, "cinco", 1, 5),
         Token(TokenType::ASSIGN, "="),
         Token(TokenType::INT, "5"),
         Token(TokenType::SEMICOLON, ";")
@@ -140,10 +140,10 @@ TEST_CASE("Function declaration", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens {
-        Token(TokenType::LET, "variable", 8),
-        Token(TokenType::IDENT, "suma", 4),
+        Token(TokenType::LET, "variable", 1, 8),
+        Token(TokenType::IDENT, "suma", 1, 4),
         Token(TokenType::ASSIGN, "="),
-        Token(TokenType::FUNCTION, "procedimiento", 13),
+        Token(TokenType::FUNCTION, "procedimiento", 1, 13),
         Token(TokenType::LPAREN, "("),
         Token(TokenType::IDENT, "x"),
         Token(TokenType::COMMA, ","),
@@ -170,14 +170,14 @@ TEST_CASE("Function call", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens {
-        Token(TokenType::LET, "variable", 8),
-        Token(TokenType::IDENT, "resultado", 9),
+        Token(TokenType::LET, "variable", 1, 8),
+        Token(TokenType::IDENT, "resultado", 1, 9),
         Token(TokenType::ASSIGN, "="),
-        Token(TokenType::IDENT, "suma", 4),
+        Token(TokenType::IDENT, "suma", 1, 4),
         Token(TokenType::LPAREN, "("),
-        Token(TokenType::IDENT, "dos", 3),
+        Token(TokenType::IDENT, "dos", 1, 3),
         Token(TokenType::COMMA, ","),
-        Token(TokenType::IDENT, "tres", 4),
+        Token(TokenType::IDENT, "tres", 1, 4),
         Token(TokenType::RPAREN, ")"),
         Token(TokenType::SEMICOLON, ";")
     };
@@ -194,21 +194,21 @@ TEST_CASE("Control statement", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens {
-        Token(TokenType::IF, "si", 2),
+        Token(TokenType::IF, "si", 1, 2),
         Token(TokenType::LPAREN, "("),
         Token(TokenType::INT, "5"),
         Token(TokenType::LT, "<"),
-        Token(TokenType::INT, "10", 2),
+        Token(TokenType::INT, "10", 1, 2),
         Token(TokenType::RPAREN, ")"),
         Token(TokenType::LBRACE, "{"),
-        Token(TokenType::RETURN, "regresa", 7),
-        Token(TokenType::_TRUE, "verdadero", 9),
+        Token(TokenType::RETURN, "regresa", 1, 7),
+        Token(TokenType::_TRUE, "verdadero", 1, 9),
         Token(TokenType::SEMICOLON, ";"),
         Token(TokenType::RBRACE, "}"),
-        Token(TokenType::ELSE, "si_no", 5),
+        Token(TokenType::ELSE, "si_no", 1, 5),
         Token(TokenType::LBRACE, "{"),
-        Token(TokenType::RETURN, "regresa", 7),
-        Token(TokenType::_FALSE, "falso", 5),
+        Token(TokenType::RETURN, "regresa", 1, 7),
+        Token(TokenType::_FALSE, "falso", 1, 5),
         Token(TokenType::SEMICOLON, ";"),
         Token(TokenType::RBRACE, "}")
     };
@@ -225,12 +225,12 @@ TEST_CASE("Two character operator", "[lexer]")
         tokens.push_back(lexer.next_token());
 
     vector<Token> expected_tokens {
-        Token(TokenType::INT, "10", 2),
-        Token(TokenType::EQ, "==", 2),
-        Token(TokenType::INT, "10", 2),
+        Token(TokenType::INT, "10", 1, 2),
+        Token(TokenType::EQ, "==", 1, 2),
+        Token(TokenType::INT, "10", 1, 2),
         Token(TokenType::SEMICOLON, ";"),
-        Token(TokenType::INT, "10", 2),
-        Token(TokenType::NOT_EQ, "!=", 2),
+        Token(TokenType::INT, "10", 1, 2),
+        Token(TokenType::NOT_EQ, "!=", 1, 2),
         Token(TokenType::INT, "9"),
         Token(TokenType::SEMICOLON, ";")
     };

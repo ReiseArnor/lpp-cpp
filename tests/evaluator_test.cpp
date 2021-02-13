@@ -166,33 +166,33 @@ TEST_CASE("Return evaluation")
 TEST_CASE("Error handling")
 {
     vector<tuple<string,const char*>> tests {
-        {"5 + verdadero", "Discrepancia de tipos: INTEGER + BOOLEAN"},
-        {"5 + verdadero; 9;", "Discrepancia de tipos: INTEGER + BOOLEAN"},
-        {"-verdadero", "Operador desconocido: -BOOLEAN"},
-        {"verdadero + falso", "Operador desconocido: BOOLEAN + BOOLEAN"},
-        {"5; verdadero - falso; 10;", "Operador desconocido: BOOLEAN - BOOLEAN"},
-        {"                                      \
-            si (10 > 7) {                       \
-                regresa verdadero + falso;      \
+        {"5 + verdadero", "Discrepancia de tipos: INTEGER + BOOLEAN cerca de la línea 1"},
+        {"5 + verdadero; 9;", "Discrepancia de tipos: INTEGER + BOOLEAN cerca de la línea 1"},
+        {"-verdadero", "Operador desconocido: -BOOLEAN cerca de la línea 1"},
+        {"1; verdadero + falso", "Operador desconocido: BOOLEAN + BOOLEAN cerca de la línea 1"},
+        {"5; verdadero - falso; 10;", "Operador desconocido: BOOLEAN - BOOLEAN cerca de la línea 1"},
+        {"                                          \
+            si (10 > 7) {\n                         \
+                regresa verdadero + falso;\n        \
             }",
-        "Operador desconocido: BOOLEAN + BOOLEAN"
+        "Operador desconocido: BOOLEAN + BOOLEAN cerca de la línea 2"
         },
-        {"                                      \
-            si (10 > 1) {                       \
-                si (verdadero) {                \
-                    regresa verdadero * falso;  \
-                }                               \
-                regresa 1;                      \
+        {"                                          \
+            si (10 > 1) {\n                         \
+                si (verdadero) {\n                  \
+                    regresa verdadero * falso;\n    \
+                }\n                                 \
+                regresa 1;\n                        \
             }",
-        "Operador desconocido: BOOLEAN * BOOLEAN"
+        "Operador desconocido: BOOLEAN * BOOLEAN cerca de la línea 3"
         },
-        {"                                      \
-            si (5 < 2) {                        \
-                regresa 1;                      \
-            } si_no {                           \
-                regresa verdadero / falso;      \
+        {"                                          \
+            si (5 < 2) {\n                          \
+                regresa 1;\n                        \
+            } si_no {\n                             \
+                regresa verdadero / falso;\n        \
             }",
-        "Operador desconocido: BOOLEAN / BOOLEAN"
+        "Operador desconocido: BOOLEAN / BOOLEAN cerca de la línea 4"
         }
     };
 

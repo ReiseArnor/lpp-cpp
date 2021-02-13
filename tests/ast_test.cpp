@@ -52,9 +52,9 @@ TEST_CASE("Expression statement", "[ast]")
 {
     Program program(vector<Statement*>{
                         new ExpressionStatement{
-                            Token(TokenType::IDENT, "foo", 3),
+                            Token(TokenType::IDENT, "foo", 1, 3),
                             new Identifier(
-                                Token(TokenType::IDENT, "foo", 3),
+                                Token(TokenType::IDENT, "foo", 1, 3),
                                 "foo"
                             )
                         },

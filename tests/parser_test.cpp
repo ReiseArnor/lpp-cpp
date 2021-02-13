@@ -63,7 +63,7 @@ TEST_CASE("Parse program", "[parser]")
     Program program(parser.parse_program());
     Program expected_program{ vector<Statement*> {
                                 new LetStatement(
-                                    Token(TokenType::LET, "variable", 8),
+                                    Token(TokenType::LET, "variable", 1, 8),
                                     new Identifier(
                                         Token(TokenType::IDENT, "x"),
                                         "x"),
