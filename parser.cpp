@@ -207,9 +207,9 @@ vector<string>& Parser::errors()
 void Parser::expected_token_error(const TokenType& tp)
 {
     string error = "Se esperaba que el siguente token fuera ";
-    error.append(getNameForValue(enums_strings, tp));
+    error.append(getNameForValue(tokens_enums_strings, tp));
     error.append(" pero se obtuvo ");
-    error.append(getNameForValue(enums_strings, peek_token.token_type) + "\n");
+    error.append(getNameForValue(tokens_enums_strings, peek_token.token_type) + "\n");
     errors_list.push_back(error);
 }
 

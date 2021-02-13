@@ -51,7 +51,7 @@ std::string getNameForValue(Mapping a, V value) {
     return pos->name;
 }
 
-const std::array<const NameValuePair<TokenType>, 27> enums_strings {{
+const std::array<const NameValuePair<TokenType>, 27> tokens_enums_strings {{
     {TokenType::ASSIGN, "ASSIGN"},
     {TokenType::COMMA, "COMMA\t"},
     {TokenType::_EOF, "EOF\t"},
@@ -108,7 +108,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const Token& t)
     {
-        out << "Type: " << getNameForValue(enums_strings, t.token_type) << "\tLiteral: " << t.literal << "\n";
+        out << "Type: " << getNameForValue(tokens_enums_strings, t.token_type) << "\tLiteral: " << t.literal << "\n";
         return out;
     }
 };
