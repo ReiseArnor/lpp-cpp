@@ -1,6 +1,8 @@
 #ifndef OBJECT_H
 #define OBJECT_H
+#include <map>
 #include <string>
+#include <vector>
 #include "token.h"
 namespace obj 
 {
@@ -76,6 +78,36 @@ public:
     ObjectType type() override { return ObjectType::ERROR; }
     std::string inspect() override { return message; }
     std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::ERROR); }
+};
+
+class Environment
+{
+    std::map<std::string, Object*> store;
+public:
+    Environment() = default;
+    Object* get_item(const std::string& key) { return store[key]; }
+    void set_item(const std::string& key, Object* value) { store[key] = value; }
+    void del_item(const std::string& key){ delete store[key]; store.erase(key); }
+    bool item_exist(const std::string& key) { return store.find(key) != store.end() ? true : false; }
+    ~Environment()
+    {
+        for(auto obj : store)
+            if(typeid(*obj.second) != typeid(Boolean))
+                delete obj.second;
+    }
+};
+
+class Cleaner
+{
+    std::vector<Object*> store;
+public:
+    Cleaner() = default;
+    void push_back(Object* obj) { store.push_back(obj); }
+    ~Cleaner()
+    {
+        for(auto obj : store)
+            delete obj;
+    }
 };
 
 } // namespace obj

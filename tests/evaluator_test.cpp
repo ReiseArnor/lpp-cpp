@@ -4,6 +4,7 @@
 #include "../object.h"
 #include "../evaluator.h"
 #include "catch2/catch.hpp"
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -11,13 +12,19 @@ using namespace std;
 using obj::Object;
 using ast::Program;
 
-Object* evaluate_tests(const string& str)
+Object* evaluate_tests(const string& str, Environment* env = nullptr)
 {
     Lexer lexer(str);
     Parser parser(lexer);
     Program program(parser.parse_program());
-
-    auto evaluated = evaluate(&program);
+    Object* evaluated = nullptr;
+    if(!env)
+    {
+        auto temp_env = make_unique<Environment>();
+        evaluated = evaluate(&program, temp_env.get());
+    }
+    else
+        evaluated = evaluate(&program, env);
 
     REQUIRE(evaluated != nullptr);
 
@@ -193,8 +200,26 @@ TEST_CASE("Error handling")
                 regresa verdadero / falso;\n        \
             }",
         "Operador desconocido: BOOLEAN / BOOLEAN cerca de la línea 4"
-        }
+        },
+        {"foobar;", "Identificador sin definir: \"foobar\" cerca de la línea 1"}
     };
 
     eval_and_test_objects(tests);
+}
+
+TEST_CASE("Assignment evaluation")
+{
+    vector<tuple<string,int>> tests {
+        {"variable a = 5; a;", 5},
+        {"variable a = 5 * 5; a;", 25},
+        {"variable a = 10; variable b = a; b;", 10},
+        {"variable a = 5; variable b = a; variable c = a + b + 5; c;", 15}
+    };
+
+    auto env = new Environment();
+    for(auto& t : tests)
+    {
+        auto evaluated = evaluate_tests(get<0>(t), env);
+        test_object(evaluated, get<1>(t));
+    }
 }
