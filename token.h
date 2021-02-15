@@ -4,6 +4,7 @@
 #include <ostream>
 #include <string>
 #include <array>
+#include "utils.h"
 
 enum class TokenType
 {
@@ -35,21 +36,6 @@ enum class TokenType
     EQ,
     NOT_EQ
 };
-
-template<class T>
-struct NameValuePair {
-    using value_type = T;
-    const T value;
-    const char* const name;
-};
-
-template<class Mapping, class V>
-std::string getNameForValue(Mapping a, V value) {
-    auto pos = std::find_if(std::begin(a), std::end(a), [&value](const typename Mapping::value_type& t){
-        return (t.value == value);
-    });
-    return pos->name;
-}
 
 const std::array<const NameValuePair<TokenType>, 27> tokens_enums_strings {{
     {TokenType::ASSIGN, "ASSIGN"},

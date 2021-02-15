@@ -335,5 +335,26 @@ public:
     }
 };
 
+class Programs_Guard
+{
+    std::vector<Program*> programs;
+public:
+    Programs_Guard() = default;
+    void push_back(Program* p) { programs.push_back(p); }
+
+    Program* new_program(const std::vector<Statement*>& statements) 
+    {
+        auto prog = new Program(statements);
+        programs.push_back(prog);
+        return prog;
+    }
+
+    ~Programs_Guard() 
+    { 
+        for(auto p : programs) 
+            delete p; 
+    }
+};
+
 } // namespace ast
 #endif // AST_H

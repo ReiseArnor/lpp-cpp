@@ -223,3 +223,60 @@ TEST_CASE("Assignment evaluation")
         test_object(evaluated, get<1>(t));
     }
 }
+
+TEST_CASE("Function evaluation")
+{
+    string str = "procedimiento(x) {x + 2;};";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    auto env = new Environment();
+    auto evaluated = static_cast<obj::Function*>(evaluate(&program, env));
+
+    REQUIRE(evaluated != nullptr);
+    
+    REQUIRE(evaluated->parameters.size() == 1);
+    REQUIRE(evaluated->parameters.at(0)->to_string() == "x");
+    REQUIRE(evaluated->body->to_string() == "(x + 2)");
+
+}
+
+TEST_CASE("Function calls")
+{
+    vector<tuple<string, int>> tests {
+        {"variable identidad = procedimiento(x) { x }; identidad(5);", 5},
+        {"                                              \
+            variable identidad = procedimiento(x) {     \
+                regresa x;                              \
+            };                                          \
+            identidad(5);                               \
+        ", 5},
+        {"                                              \
+            variable doble = procedimiento(x) {         \
+                regresa 2 * x;                          \
+            };                                          \
+            doble(5)                                    \
+        ", 10},
+        {"                                              \
+            variable suma = procedimiento(x, y) {       \
+                regresa x + y;                          \
+            };                                          \
+            suma(3, 8);                                 \
+        ", 11},
+        {"                                              \
+            variable suma = procedimiento(x, y) {       \
+                regresa x + y;                          \
+            };                                          \
+            suma(5 + 5, suma(10, 10));                  \
+        ", 30},
+        {"procedimiento(x) { x }(5)", 5}
+    };
+
+    auto env = new Environment();
+    for(auto& t : tests)
+    {
+        auto evaluated = evaluate_tests(get<0>(t), env);
+        test_object(evaluated, get<1>(t));
+    }
+}

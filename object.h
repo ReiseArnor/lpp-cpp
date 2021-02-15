@@ -1,9 +1,17 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
+#include "ast.h"
+#include "parser.h"
 #include "token.h"
+#include "utils.h"
+
+using ast::Identifier;
+using ast::Block;
+
 namespace obj 
 {
 enum class ObjectType
@@ -12,15 +20,17 @@ enum class ObjectType
     INTEGER,
     _NULL,
     RETURN,
-    ERROR
+    ERROR,
+    FUNCTION
 };
 
-const std::array<const NameValuePair<ObjectType>, 5> objects_enums_string {{
+const std::array<const NameValuePair<ObjectType>, 6> objects_enums_string {{
     {ObjectType::BOOLEAN, "BOOLEAN"},
     {ObjectType::INTEGER, "INTEGER"},
     {ObjectType::_NULL, "NULL"},
     {ObjectType::RETURN, "RETURN"},
-    {ObjectType::ERROR, "ERROR"}
+    {ObjectType::ERROR, "ERROR"},
+    {ObjectType::FUNCTION, "FUNCTION"}
 }};
 
 class Object
@@ -83,30 +93,57 @@ public:
 class Environment
 {
     std::map<std::string, Object*> store;
+    Environment* outer = nullptr;
 public:
     Environment() = default;
-    Object* get_item(const std::string& key) { return store[key]; }
+    explicit Environment(Environment* outer) : outer(outer) {}
     void set_item(const std::string& key, Object* value) { store[key] = value; }
-    void del_item(const std::string& key){ delete store[key]; store.erase(key); }
-    bool item_exist(const std::string& key) { return store.find(key) != store.end() ? true : false; }
+    void del_item(const std::string& key){ store.erase(key); }
+
+    Object* get_item(const std::string& key)
+    { 
+        if(store[key])
+            return store[key];
+        else
+            return outer->get_item(key);
+    }
+
+    bool item_exist(const std::string& key) 
+    {
+        if(store.find(key) != store.end())
+            return true;
+        else if(outer && outer->item_exist(key))
+            return true;
+        return false;
+    }
+    
     ~Environment()
     {
-        for(auto obj : store)
+        std::map<Object*, bool> obj_found;
+        for(auto& obj : store)
             if(typeid(*obj.second) != typeid(Boolean))
-                delete obj.second;
+                if(!obj_found[obj.second])
+                {
+                    obj_found[obj.second] = true;
+                    delete obj.second;
+                }
     }
 };
 
-class Cleaner
+static const char* FUNCTION_NAME = "Función: %p";
+class Function : public Object
 {
-    std::vector<Object*> store;
 public:
-    Cleaner() = default;
-    void push_back(Object* obj) { store.push_back(obj); }
-    ~Cleaner()
+    std::vector<Identifier*> parameters;
+    Block* body;
+    Environment* env;
+    Function(const std::vector<Identifier*>& params, Block* b, Environment* env )
+        : parameters(params), body(b), env(env) {}
+    ObjectType type() override { return ObjectType::FUNCTION; }
+    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::FUNCTION); }
+    std::string inspect() override 
     {
-        for(auto obj : store)
-            delete obj;
+       return format(FUNCTION_NAME, static_cast<void*>(this));
     }
 };
 

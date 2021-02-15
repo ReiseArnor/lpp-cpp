@@ -5,7 +5,8 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
-#include <cstdarg>
+#include "utils.h"
+
 using obj::Object;
 using ast::ASTNode;
 using ast::Program;
@@ -21,19 +22,8 @@ using obj::Environment;
 using ast::LetStatement;
 using ast::Identifier;
 
-static std::string format_error(const char* format, ...)
-{
-    va_list args;
-    va_start (args, format);
-    size_t len = std::vsnprintf(NULL, 0, format, args);
-    va_end (args);
-    std::vector<char> vec(len + 1);
-    va_start (args, format);
-    std::vsnprintf(&vec[0], len + 1, format, args);
-    va_end (args);
-    return &vec[0];
-}
-
+static const char* WRONG_ARGS = "Cantidad errónea de argumentos para la función cerca de la línea %d, se esperaban %d pero se obtuvo %d";
+static const char* NOT_A_FUNCTION = "No es una function: %s cerca de la línea %d";
 static const char* TYPE_MISMATCH = "Discrepancia de tipos: %s %s %s cerca de la línea %d";
 static const char* UNKNOWN_PREFIX_OPERATION = "Operador desconocido: %s%s cerca de la línea %d";
 static const char* UNKNOWN_INFIX_OPERATION = "Operador desconocido: %s %s %s cerca de la línea %d";
@@ -43,7 +33,7 @@ const static auto TRUE = std::make_unique<obj::Boolean>(true);
 const static auto FALSE = std::make_unique<obj::Boolean>(false);
 const static auto _NULL = std::make_unique<obj::Null>();
 
-static auto eval_errors = obj::Cleaner();
+static auto eval_errors = Cleaner<Object>();
 
 static Object* evaluate_program(Program*, Environment*);
 static Object* to_boolean_object(bool);
@@ -52,6 +42,8 @@ static Object* evaluate_infix_expression(const std::string&, Object*, Object*, c
 static Object* evaluate_if_expression(If*, Environment*);
 static Object* evaluate_block_statements(Block*, Environment*);
 static Object* evaluate_identifier(Identifier*, Environment*, const int);
+static std::vector<Object*> evaluate_expression(const std::vector<Expression*>&, Environment*);
+static Object* apply_function(Object*, const std::vector<Object*>&, const int);
 
 static Object* evaluate(ASTNode* node, Environment* env)
 {
@@ -123,6 +115,7 @@ static Object* evaluate(ASTNode* node, Environment* env)
         assert(cast_node->value);
         auto value = evaluate(cast_node->value, env);
         assert(cast_node->name);
+
         env->set_item(cast_node->name->value, value);
         return value;
     }
@@ -132,8 +125,74 @@ static Object* evaluate(ASTNode* node, Environment* env)
         assert(cast_node);
         return evaluate_identifier(cast_node, env, cast_node->token.line);
     }
+    else if (node_type == typeid(ast::Function).name()) 
+    {
+        auto cast_node = dynamic_cast<ast::Function*>(node);
+        assert(cast_node);
+        return new obj::Function(cast_node->parameters, cast_node->body, env);
+    }
+    else if (node_type == typeid(ast::Call).name())
+    {
+        auto cast_node = dynamic_cast<ast::Call*>(node);
+
+        auto function = evaluate(cast_node->function, env);
+        auto args = evaluate_expression(cast_node->arguments, env);
+    
+        return apply_function(function, args, cast_node->token.line);
+    }
 
     return nullptr;
+}
+
+static Environment* extend_function_environment(obj::Function* fn, const std::vector<Object*>& args, const int line)
+{
+    if(fn->parameters.size() != args.size())
+    {
+        auto error = new Error{ format(
+                    WRONG_ARGS,
+                    line,
+                    fn->parameters.size(),
+                    args.size()
+                    ) };
+        eval_errors.push_back(error);
+        return nullptr;
+    }
+
+    auto env = new Environment(fn->env);
+
+    for(int i = 0; i < fn->parameters.size(); i++)
+        env->set_item(fn->parameters.at(i)->value, args.at(i));
+    
+    return env;
+}
+
+static Object* unwrap_return_value(Object* obj)
+{
+    if(typeid(*obj) == typeid(obj::Return))
+        return static_cast<obj::Return*>(obj)->value;
+    return obj;
+}
+
+Object* apply_function(Object* fn, const std::vector<Object*>& args, const int line)
+{
+    if(typeid(*fn) != typeid(obj::Function))
+    {
+        auto error = new Error{ format(
+                    NOT_A_FUNCTION,
+                    fn->type_string().c_str(),
+                    line
+                    ) };
+        eval_errors.push_back(error);
+        return error;
+    }
+
+    auto function = static_cast<obj::Function*>(fn);
+    auto extended_environment = extend_function_environment(function, args, line);
+    if(!extended_environment)
+        return eval_errors.at(eval_errors.size() - 1);
+
+    auto evaluated = evaluate(function->body, extended_environment);
+    return unwrap_return_value(evaluated);
 }
 
 Object* evaluate_program(Program* program, Environment* env)
@@ -215,7 +274,7 @@ static Object* evaluate_minus_operator_expression(Object* right, const int line)
 {
     if(typeid(*right).name() != typeid(obj::Integer).name())
     {
-        auto error = new Error{ format_error(
+        auto error = new Error{ format(
                     UNKNOWN_PREFIX_OPERATION,
                     "-",
                     right->type_string().c_str(),
@@ -238,7 +297,7 @@ Object* evaluate_prefix_expression(const std::string& operatr, Object* right, co
         return evaluate_minus_operator_expression(right, line);
     else
     {
-        auto error = new Error{ format_error(
+        auto error = new Error{ format(
                     UNKNOWN_PREFIX_OPERATION,
                     operatr.c_str(), 
                     right->type_string().c_str(),
@@ -273,7 +332,7 @@ static Object* evaluate_integer_infix_expression(const std::string& operatr, Obj
         return to_boolean_object(left_value != right_value);
     else
     {
-        auto error = new Error{ format_error(
+        auto error = new Error{ format(
                     UNKNOWN_INFIX_OPERATION,
                     left->type_string().c_str(),
                     operatr.c_str(),
@@ -302,7 +361,7 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
                 );
     else if(left->type() != right->type())
     {
-        auto error = new Error{ format_error(
+        auto error = new Error{ format(
                     TYPE_MISMATCH,
                     left->type_string().c_str(),
                     operatr.c_str(),
@@ -314,7 +373,7 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
     }
        
 
-    auto error = new Error{ format_error(
+    auto error = new Error{ format(
                 UNKNOWN_INFIX_OPERATION,
                 left->type_string().c_str(),
                 operatr.c_str(),
@@ -331,14 +390,25 @@ Object* evaluate_identifier(Identifier* ident, Environment* env, const int line)
         return env->get_item(ident->value);
     else
     {
-        auto error = new Error{ format_error(
+        auto error = new Error{ format(
                     UNKNOWN_IDENTIFIER,
                     ident->value.c_str(),
                     line) };
         eval_errors.push_back(error);
         return error;
     }
-        
+}
+
+std::vector<Object*> evaluate_expression(const std::vector<Expression*>& expressions, Environment* env)
+{
+    auto result = std::vector<Object*>();
+    for(auto exp : expressions)
+    {
+        auto evaluated = evaluate(exp, env);
+        if(evaluated)
+            result.push_back(evaluated);
+    }
+    return result;    
 }
 
 Object* to_boolean_object(bool value)
