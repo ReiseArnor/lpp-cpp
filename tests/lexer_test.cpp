@@ -237,3 +237,23 @@ TEST_CASE("Two character operator", "[lexer]")
     
     REQUIRE(tokens == expected_tokens);
 }
+
+TEST_CASE("String")
+{
+    string str = "\"foo\";                                  \
+                    \"Platzi es la mejor escuela de CS\";   \
+                ";
+    Lexer lexer(str);
+    vector<Token> tokens;
+    for(size_t i = 0; i < 4; i++)
+        tokens.push_back(lexer.next_token());
+
+    auto expected_tokens = vector<Token> {
+        Token(TokenType::STRING, "foo", 1, 3),
+        Token(TokenType::SEMICOLON, ";"),
+        Token(TokenType::STRING, "Platzi es la mejor escuela de CS", 1, 32),
+        Token(TokenType::SEMICOLON, ";")
+    };
+
+    REQUIRE(tokens == expected_tokens);
+}

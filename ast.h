@@ -335,6 +335,18 @@ public:
     }
 };
 
+class StringLiteral : public Expression
+{
+public:
+    std::string value;
+    StringLiteral(const Token& t, const std::string& val)
+        : Expression(t), value(val) {}
+    std::string to_string() const override
+    {
+        return Expression::to_string();
+    }
+};
+
 class Programs_Guard
 {
     std::vector<Program*> programs;

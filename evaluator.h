@@ -34,6 +34,7 @@ const static auto FALSE = std::make_unique<obj::Boolean>(false);
 const static auto _NULL = std::make_unique<obj::Null>();
 
 static auto eval_errors = Cleaner<Object>();
+static auto environments = std::vector<std::unique_ptr<Environment>>();
 
 static Object* evaluate_program(Program*, Environment*);
 static Object* to_boolean_object(bool);
@@ -140,6 +141,11 @@ static Object* evaluate(ASTNode* node, Environment* env)
     
         return apply_function(function, args, cast_node->token.line);
     }
+    else if (node_type == typeid(ast::StringLiteral).name())
+    {
+        auto cast_node = dynamic_cast<ast::StringLiteral*>(node);
+        return new obj::String(cast_node->value);
+    }
 
     return nullptr;
 }
@@ -157,8 +163,9 @@ static Environment* extend_function_environment(obj::Function* fn, const std::ve
         eval_errors.push_back(error);
         return nullptr;
     }
-
+    
     auto env = new Environment(fn->env);
+    environments.push_back(std::make_unique<Environment>(env));
 
     for(int i = 0; i < fn->parameters.size(); i++)
         env->set_item(fn->parameters.at(i)->value, args.at(i));

@@ -21,16 +21,18 @@ enum class ObjectType
     _NULL,
     RETURN,
     ERROR,
-    FUNCTION
+    FUNCTION,
+    STRING
 };
 
-const std::array<const NameValuePair<ObjectType>, 6> objects_enums_string {{
+const std::array<const NameValuePair<ObjectType>, 7> objects_enums_string {{
     {ObjectType::BOOLEAN, "BOOLEAN"},
     {ObjectType::INTEGER, "INTEGER"},
     {ObjectType::_NULL, "NULL"},
     {ObjectType::RETURN, "RETURN"},
     {ObjectType::ERROR, "ERROR"},
-    {ObjectType::FUNCTION, "FUNCTION"}
+    {ObjectType::FUNCTION, "FUNCTION"},
+    {ObjectType::STRING, "STRING"}
 }};
 
 class Object
@@ -96,7 +98,7 @@ class Environment
     Environment* outer = nullptr;
 public:
     Environment() = default;
-    explicit Environment(Environment* outer) : outer(outer) {}
+    explicit Environment(Environment* outer) : outer(outer) { }
     void set_item(const std::string& key, Object* value) { store[key] = value; }
     void del_item(const std::string& key){ store.erase(key); }
 
@@ -119,12 +121,12 @@ public:
     
     ~Environment()
     {
-        std::map<Object*, bool> obj_found;
+        static std::map<Object*, bool> obj_deleted;
         for(auto& obj : store)
             if(typeid(*obj.second) != typeid(Boolean))
-                if(!obj_found[obj.second])
+                if(!obj_deleted[obj.second])
                 {
-                    obj_found[obj.second] = true;
+                    obj_deleted[obj.second] = true;
                     delete obj.second;
                 }
     }
@@ -145,6 +147,16 @@ public:
     {
        return format(FUNCTION_NAME, static_cast<void*>(this));
     }
+};
+
+class String : public Object
+{
+public:
+    std::string value;
+    explicit String(const std::string& v) : value(v) {}
+    ObjectType type() override { return ObjectType::STRING; }
+    std::string inspect() override { return value; }
+    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::STRING); }
 };
 
 } // namespace obj

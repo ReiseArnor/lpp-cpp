@@ -11,6 +11,7 @@
 using namespace std;
 using obj::Object;
 using ast::Program;
+using obj::String;
 
 Object* evaluate_tests(const string& str, Environment* env = nullptr)
 {
@@ -278,5 +279,20 @@ TEST_CASE("Function calls")
     {
         auto evaluated = evaluate_tests(get<0>(t), env);
         test_object(evaluated, get<1>(t));
+    }
+}
+
+TEST_CASE("String evaluation")
+{
+    vector<tuple<string,string>> tests {
+        {"\"Hello world!\"", "Hello world!"},
+        {"procedimiento(){ regresa \"Platzi es genial\"; }()",
+            "Platzi es genial"}
+    };
+
+    for(auto& t : tests)
+    {
+        auto evaluated = static_cast<String*>(evaluate_tests(get<0>(t)));
+        REQUIRE(evaluated->value == get<1>(t)); 
     }
 }

@@ -34,10 +34,11 @@ enum class TokenType
     ELSE,
     RETURN,
     EQ,
-    NOT_EQ
+    NOT_EQ,
+    STRING
 };
 
-const std::array<const NameValuePair<TokenType>, 27> tokens_enums_strings {{
+const std::array<const NameValuePair<TokenType>, 28> tokens_enums_strings {{
     {TokenType::ASSIGN, "ASSIGN"},
     {TokenType::COMMA, "COMMA\t"},
     {TokenType::_EOF, "EOF\t"},
@@ -64,7 +65,8 @@ const std::array<const NameValuePair<TokenType>, 27> tokens_enums_strings {{
     {TokenType::ELSE, "ELSE\t"},
     {TokenType::RETURN, "RETURN"},
     {TokenType::EQ, "EQ\t"},
-    {TokenType::NOT_EQ, "NOT_EQ"}
+    {TokenType::NOT_EQ, "NOT_EQ"},
+    {TokenType::STRING, "STRING"}
 }};
 
 class Token

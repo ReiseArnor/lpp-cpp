@@ -13,8 +13,9 @@ private:
     int line;
 
     void read_character();
-    Token read_identifier();
     Token keyword(const std::string&) const;
+    Token read_string(bool = false);
+    Token read_identifier();
     Token read_number();
     char peek_character() const;
 

@@ -131,6 +131,10 @@ Lexer::Lexer(const string& src)
             return Token { TokenType::COMMA, &current_char, line };
         case ';':
             return Token { TokenType::SEMICOLON, &current_char, line };
+        case '\"':
+            return read_string();
+        case '\'':
+            return read_string(true);
         case '\0':
             return Token { TokenType::_EOF, &current_char, line };
         default:
@@ -160,6 +164,35 @@ Token Lexer::read_number()
     read_position = position;
 
     return Token { TokenType::INT, begin, end, line };
+}
+
+Token Lexer::read_string(bool simple_quote)
+{
+    read_character();
+    const char* begin = &source.at(position);
+    const char* end = begin;
+    while(current_char != '\0')
+    {
+        read_character();
+        if(simple_quote)
+        {
+            if(current_char == '\'')
+            {
+                end = &source.at(position);
+                break;
+            }
+        }
+        else
+        {
+            if(current_char == '\"')
+            {
+                end = &source.at(position);
+                break;
+            }
+        }
+    }
+
+    return Token { TokenType::STRING, begin, end, line};
 }
 
 Token Lexer::keyword(const string& s) const

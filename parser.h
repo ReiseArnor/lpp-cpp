@@ -26,6 +26,7 @@ using ast::Infix;
 using ast::If;
 using ast::Function;
 using ast::Call;
+using ast::StringLiteral;
 
 using PrefixParseFn = std::function<Expression*()>;
 using InfixParseFn = std::function<Expression*(Expression*)>;
@@ -188,6 +189,12 @@ private:
         function->body = parse_block();
         
         return function.release();
+    };
+
+    PrefixParseFn parse_string_literal = [&]() -> Expression*
+    {
+        auto string_literal = std::make_unique<StringLiteral>(current_token, current_token.literal);
+        return string_literal.release();
     };
 
     InfixParseFn parse_infix_expression = [&](Expression* left) -> Expression*

@@ -420,3 +420,16 @@ TEST_CASE("Call expression", "[parser]")
     test_infix_expression(call->arguments.at(1), 2, "*", 3);
     test_infix_expression(call->arguments.at(2), 4, "+", 5);
 }
+
+TEST_CASE("String literal expression")
+{
+    string str = "\"hello world!\"";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(0));
+    auto string_literal = static_cast<StringLiteral*>(expression_statement->expression);
+
+    REQUIRE(string_literal->value == "hello world!");
+}
