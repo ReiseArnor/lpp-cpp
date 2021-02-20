@@ -202,8 +202,9 @@ TEST_CASE("Error handling")
             }",
         "Operador desconocido: BOOLEAN / BOOLEAN cerca de la línea 4"
         },
-        {"foobar;", "Identificador sin definir: \"foobar\" cerca de la línea 1"}
-    };
+        {"foobar;", "Identificador sin definir: \"foobar\" cerca de la línea 1"},
+        {"\"foo\" - \"bar\";", "Operador desconocido: STRING - STRING cerca de la línea 1"}
+        };
 
     eval_and_test_objects(tests);
 }
@@ -295,4 +296,36 @@ TEST_CASE("String evaluation")
         auto evaluated = static_cast<String*>(evaluate_tests(get<0>(t)));
         REQUIRE(evaluated->value == get<1>(t)); 
     }
+}
+
+TEST_CASE("String concatenation")
+{
+    vector<tuple<string,string>> tests {
+        {"\"foo\" + \"bar\";", "foobar"},
+        {"\"Hello,\" + \" \" + \"world!\"", "Hello, world!"},
+        {"                                              \
+            variable saludo = procedimiento(nombre) {   \
+                regresa \"Hola \" + nombre + \"!\";     \
+            }                                           \
+            saludo(\"David\")                           \
+        ", "Hola David!"}
+    };
+
+    for(auto& t : tests)
+    {
+        auto evaluated = static_cast<String*>(evaluate_tests(get<0>(t)));
+        REQUIRE(evaluated->value == get<1>(t)); 
+    }
+}
+
+TEST_CASE("String comparison")
+{
+    vector<tuple<string,bool>> tests {
+        {"\"a\" == \"a\"", true},
+        {"\"a\" != \"a\"", false},
+        {"\"a\" == \"b\"", false},
+        {"\"a\" != \"b\"", true}
+    };
+
+    eval_and_test_objects(tests);
 }

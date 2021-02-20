@@ -352,10 +352,35 @@ static Object* evaluate_integer_infix_expression(const std::string& operatr, Obj
         
 }
 
+static Object* evaluate_string_infix_expression(const std::string& operatr, Object* left, Object* right, const int line)
+{
+    auto left_value = static_cast<obj::String*>(left)->value;
+    auto right_value = static_cast<obj::String*>(right)->value;
+
+    if(operatr == "+")
+        return new obj::String(left_value + right_value);
+    else if(operatr == "==")
+        return to_boolean_object(left_value == right_value);
+    else if(operatr == "!=")
+        return to_boolean_object(left_value != right_value);
+    
+    auto error = new Error{ format(
+                UNKNOWN_INFIX_OPERATION,
+                left->type_string().c_str(),
+                operatr.c_str(),
+                right->type_string().c_str(),
+                line
+                ) };
+    eval_errors.push_back(error);
+    return error;
+}
+
 Object* evaluate_infix_expression(const std::string& operatr, Object* left, Object* right, const int line)
 {
     if(left->type() == ObjectType::INTEGER && right->type() == ObjectType::INTEGER)
         return evaluate_integer_infix_expression(operatr, left, right, line);
+    else if(left->type() == ObjectType::STRING && right->type() == ObjectType::STRING)
+        return evaluate_string_infix_expression(operatr, left, right, line);
     else if(operatr == "==")
         return to_boolean_object(
                 dynamic_cast<obj::Boolean*>(left)->value == 
