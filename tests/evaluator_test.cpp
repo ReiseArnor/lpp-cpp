@@ -203,7 +203,11 @@ TEST_CASE("Error handling")
         "Operador desconocido: BOOLEAN / BOOLEAN cerca de la línea 4"
         },
         {"foobar;", "Identificador sin definir: \"foobar\" cerca de la línea 1"},
-        {"\"foo\" - \"bar\";", "Operador desconocido: STRING - STRING cerca de la línea 1"}
+        {"\"foo\" - \"bar\";", "Operador desconocido: STRING - STRING cerca de la línea 1"},
+        {"longitud(1);", 
+            "Argumento para longitud sin soporte, se recibio INTEGER cerca de la línea 1"},
+        {"longitud(\"uno\", \"dos\");", 
+            "Número incorrecto de argumentos para longitud, se recibieron 2, se esperaba 1, cerca de la línea 1"}
         };
 
     eval_and_test_objects(tests);
@@ -325,6 +329,17 @@ TEST_CASE("String comparison")
         {"\"a\" != \"a\"", false},
         {"\"a\" == \"b\"", false},
         {"\"a\" != \"b\"", true}
+    };
+
+    eval_and_test_objects(tests);
+}
+
+TEST_CASE("Builtin functions")
+{
+    vector<tuple<string,int>> tests {
+        {"longitud(\"\");", 0},
+        {"longitud(\"cuatro\");", 6},
+        {"longitud(\"Hola mundo\");", 10}
     };
 
     eval_and_test_objects(tests);
