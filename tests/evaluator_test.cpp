@@ -205,7 +205,7 @@ TEST_CASE("Error handling")
         {"foobar;", "Identificador sin definir: \"foobar\" cerca de la línea 1"},
         {"\"foo\" - \"bar\";", "Operador desconocido: STRING - STRING cerca de la línea 1"},
         {"longitud(1);", 
-            "Argumento para longitud sin soporte, se recibio INTEGER cerca de la línea 1"},
+            "Argumento para longitud sin soporte, se recibió INTEGER cerca de la línea 1"},
         {"longitud(\"uno\", \"dos\");", 
             "Número incorrecto de argumentos para longitud, se recibieron 2, se esperaba 1, cerca de la línea 1"}
         };

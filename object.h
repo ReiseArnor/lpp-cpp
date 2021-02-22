@@ -1,13 +1,13 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 #include "ast.h"
 #include "parser.h"
 #include "token.h"
 #include "utils.h"
+#include <functional>
 
 using ast::Identifier;
 using ast::Block;
@@ -22,17 +22,19 @@ enum class ObjectType
     RETURN,
     ERROR,
     FUNCTION,
-    STRING
+    STRING,
+    BUILTIN
 };
 
-const std::array<const NameValuePair<ObjectType>, 7> objects_enums_string {{
+const std::array<const NameValuePair<ObjectType>, 8> objects_enums_string {{
     {ObjectType::BOOLEAN, "BOOLEAN"},
     {ObjectType::INTEGER, "INTEGER"},
     {ObjectType::_NULL, "NULL"},
     {ObjectType::RETURN, "RETURN"},
     {ObjectType::ERROR, "ERROR"},
     {ObjectType::FUNCTION, "FUNCTION"},
-    {ObjectType::STRING, "STRING"}
+    {ObjectType::STRING, "STRING"},
+    {ObjectType::BUILTIN, "BUILTIN"}
 }};
 
 class Object
@@ -157,6 +159,18 @@ public:
     ObjectType type() override { return ObjectType::STRING; }
     std::string inspect() override { return value; }
     std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::STRING); }
+};
+
+using BuiltinFunction = std::function<Object*(const std::vector<Object*>&, const int)>;
+
+class Builtin : public Object
+{
+public:
+    const BuiltinFunction& fn;
+    explicit Builtin(const BuiltinFunction& builtin_fn) : fn(builtin_fn) {}
+    ObjectType type() override { return ObjectType::BUILTIN; }
+    std::string inspect() override { return "builtin function"; }
+    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::BUILTIN); }
 };
 
 } // namespace obj

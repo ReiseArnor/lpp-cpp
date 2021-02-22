@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "object.h"
+#include "builtin.h"
 #include <cassert>
 #include <memory>
 #include <string>
@@ -182,24 +183,29 @@ static Object* unwrap_return_value(Object* obj)
 
 Object* apply_function(Object* fn, const std::vector<Object*>& args, const int line)
 {
-    if(typeid(*fn) != typeid(obj::Function))
+    if(typeid(*fn) == typeid(obj::Function))
     {
-        auto error = new Error{ format(
+        auto function = static_cast<obj::Function*>(fn);
+        auto extended_environment = extend_function_environment(function, args, line);
+        if(!extended_environment)
+            return eval_errors.at(eval_errors.size() - 1);
+
+        auto evaluated = evaluate(function->body, extended_environment);
+        return unwrap_return_value(evaluated);
+    }
+    else if(typeid(*fn) == typeid(obj::Builtin))
+    {
+        auto function = static_cast<obj::Builtin*>(fn);
+        return function->fn(args, line);
+    }
+    
+    auto error = new Error{ format(
                     NOT_A_FUNCTION,
                     fn->type_string().c_str(),
                     line
                     ) };
         eval_errors.push_back(error);
         return error;
-    }
-
-    auto function = static_cast<obj::Function*>(fn);
-    auto extended_environment = extend_function_environment(function, args, line);
-    if(!extended_environment)
-        return eval_errors.at(eval_errors.size() - 1);
-
-    auto evaluated = evaluate(function->body, extended_environment);
-    return unwrap_return_value(evaluated);
 }
 
 Object* evaluate_program(Program* program, Environment* env)
@@ -420,6 +426,8 @@ Object* evaluate_identifier(Identifier* ident, Environment* env, const int line)
 {
     if(env->item_exist(ident->value))
         return env->get_item(ident->value);
+    else if(BUILTINS.find(ident->value) != BUILTINS.end())
+        return &BUILTINS.at(ident->value);
     else
     {
         auto error = new Error{ format(
