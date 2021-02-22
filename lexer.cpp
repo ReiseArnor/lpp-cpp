@@ -132,9 +132,9 @@ Lexer::Lexer(const string& src)
         case ';':
             return Token { TokenType::SEMICOLON, &current_char, line };
         case '\"':
-            return read_string();
+            return read_string('\"');
         case '\'':
-            return read_string(true);
+            return read_string('\'');
         case '\0':
             return Token { TokenType::_EOF, &current_char, line };
         default:
@@ -166,29 +166,21 @@ Token Lexer::read_number()
     return Token { TokenType::INT, begin, end, line };
 }
 
-Token Lexer::read_string(bool simple_quote)
+Token Lexer::read_string(char quote)
 {
     read_character();
+    if(current_char == quote)
+        return Token { TokenType::STRING, string(""), line};
+    
     const char* begin = &source.at(position);
     const char* end = begin;
     while(current_char != '\0')
     {
         read_character();
-        if(simple_quote)
+        if(current_char == quote)
         {
-            if(current_char == '\'')
-            {
-                end = &source.at(position);
-                break;
-            }
-        }
-        else
-        {
-            if(current_char == '\"')
-            {
-                end = &source.at(position);
-                break;
-            }
+            end = &source.at(position);
+            break;
         }
     }
 

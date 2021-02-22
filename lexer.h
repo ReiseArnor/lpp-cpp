@@ -14,7 +14,7 @@ private:
 
     void read_character();
     Token keyword(const std::string&) const;
-    Token read_string(bool = false);
+    Token read_string(char);
     Token read_identifier();
     Token read_number();
     char peek_character() const;
