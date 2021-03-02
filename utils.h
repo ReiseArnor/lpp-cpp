@@ -33,20 +33,4 @@ static std::string format(const char* format, ...)
     return &vec[0];
 }
 
-template<class T>
-class Cleaner
-{
-    std::vector<T*> store;
-public:
-    Cleaner() = default;
-    void push_back(T* obj) { store.push_back(obj); }
-    T* at(const int index) const { return store.at(index); }
-    int size() const { return store.size(); }
-    ~Cleaner()
-    {
-        for(auto obj : store)
-            delete obj;
-    }
-};
-
 #endif // UTILS_H

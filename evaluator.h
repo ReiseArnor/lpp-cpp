@@ -7,6 +7,7 @@
 #include <typeinfo>
 #include <vector>
 #include "utils.h"
+#include "cleaner.h"
 
 using obj::Object;
 using ast::ASTNode;
@@ -34,9 +35,6 @@ const static auto TRUE = std::make_unique<obj::Boolean>(true);
 const static auto FALSE = std::make_unique<obj::Boolean>(false);
 const static auto _NULL = std::make_unique<obj::Null>();
 
-static auto eval_errors = Cleaner<Object>();
-static auto environments = std::vector<std::unique_ptr<Environment>>();
-
 static Object* evaluate_program(Program*, Environment*);
 static Object* to_boolean_object(bool);
 static Object* evaluate_prefix_expression(const std::string&, Object*, const int);
@@ -63,7 +61,9 @@ static Object* evaluate(ASTNode* node, Environment* env)
     else if(node_type == typeid(ast::Integer).name())
     {
         auto cast_node = dynamic_cast<ast::Integer*>(node);
-        return new obj::Integer(cast_node->value);
+        auto integer = new obj::Integer(cast_node->value);
+        cleaner.push_back(integer);
+        return integer;
     }
     else if(node_type == typeid(ast::Boolean).name())
     {
@@ -108,8 +108,9 @@ static Object* evaluate(ASTNode* node, Environment* env)
         assert(cast_node->return_value);
         auto value = evaluate(cast_node->return_value, env);
         assert(value);
-
-        return new obj::Return(value);
+        auto return_val = new obj::Return(value);
+        cleaner.push_back(return_val);
+        return return_val;
     }
     else if(node_type == typeid(LetStatement).name())
     {
@@ -131,7 +132,9 @@ static Object* evaluate(ASTNode* node, Environment* env)
     {
         auto cast_node = dynamic_cast<ast::Function*>(node);
         assert(cast_node);
-        return new obj::Function(cast_node->parameters, cast_node->body, env);
+        auto func = new obj::Function(cast_node->parameters, cast_node->body, env);
+        cleaner.push_back(func);
+        return func;
     }
     else if (node_type == typeid(ast::Call).name())
     {
@@ -145,7 +148,9 @@ static Object* evaluate(ASTNode* node, Environment* env)
     else if (node_type == typeid(ast::StringLiteral).name())
     {
         auto cast_node = dynamic_cast<ast::StringLiteral*>(node);
-        return new obj::String(cast_node->value);
+        auto str = new obj::String(cast_node->value);
+        cleaner.push_back(str);
+        return str;
     }
 
     return nullptr;
@@ -166,7 +171,7 @@ static Environment* extend_function_environment(obj::Function* fn, const std::ve
     }
     
     auto env = new Environment(fn->env);
-    environments.push_back(std::make_unique<Environment>(env));
+    environments.push_back(env);
 
     for(int i = 0; i < fn->parameters.size(); i++)
         env->set_item(fn->parameters.at(i)->value, args.at(i));
@@ -204,8 +209,8 @@ Object* apply_function(Object* fn, const std::vector<Object*>& args, const int l
                     fn->type_string().c_str(),
                     line
                     ) };
-        eval_errors.push_back(error);
-        return error;
+    eval_errors.push_back(error);
+    return error;
 }
 
 Object* evaluate_program(Program* program, Environment* env)
@@ -298,8 +303,9 @@ static Object* evaluate_minus_operator_expression(Object* right, const int line)
     }
 
     auto cast_right = dynamic_cast<obj::Integer*>(right);
-
-    return new obj::Integer(-cast_right->value);
+    auto integer = new obj::Integer(-cast_right->value);
+    cleaner.push_back(integer);
+    return integer;
 }
 
 Object* evaluate_prefix_expression(const std::string& operatr, Object* right, const int line)
@@ -328,13 +334,29 @@ static Object* evaluate_integer_infix_expression(const std::string& operatr, Obj
     auto right_value = static_cast<obj::Integer*>(right)->value;
 
     if (operatr == "+")
-        return new obj::Integer(left_value + right_value);
+    {
+        auto integer = new obj::Integer(left_value + right_value);
+        cleaner.push_back(integer);
+        return integer;
+    }
     else if (operatr == "-")
-        return new obj::Integer(left_value - right_value);
+    {
+        auto integer = new obj::Integer(left_value - right_value);
+        cleaner.push_back(integer);
+        return integer;
+    }
     else if (operatr == "*")
-        return new obj::Integer(left_value * right_value);
+    {
+        auto integer = new obj::Integer(left_value * right_value);
+        cleaner.push_back(integer);
+        return integer;
+    }
     else if (operatr == "/")
-        return new obj::Integer(left_value / right_value);
+    {
+        auto integer = new obj::Integer(left_value / right_value);
+        cleaner.push_back(integer);
+        return integer;
+    }
     else if (operatr == "<")
         return to_boolean_object(left_value < right_value);
     else if (operatr == ">")
@@ -364,7 +386,11 @@ static Object* evaluate_string_infix_expression(const std::string& operatr, Obje
     auto right_value = static_cast<obj::String*>(right)->value;
 
     if(operatr == "+")
-        return new obj::String(left_value + right_value);
+    {
+        auto str = new obj::String(left_value + right_value);
+        cleaner.push_back(str);
+        return str;
+    }
     else if(operatr == "==")
         return to_boolean_object(left_value == right_value);
     else if(operatr == "!=")

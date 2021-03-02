@@ -120,18 +120,6 @@ public:
             return true;
         return false;
     }
-    
-    ~Environment()
-    {
-        static std::map<Object*, bool> obj_deleted;
-        for(auto& obj : store)
-            if(typeid(*obj.second) != typeid(Boolean))
-                if(!obj_deleted[obj.second])
-                {
-                    obj_deleted[obj.second] = true;
-                    delete obj.second;
-                }
-    }
 };
 
 static const char* FUNCTION_NAME = "Función: %p";
