@@ -197,9 +197,9 @@ public:
     Expression* left;
     std::string operatr;
     Infix(const Token& t, Expression* l, const std::string& op)
-        : Expression(t), left(l), operatr(op), right(nullptr) {}
+        : Expression(t), right(nullptr), left(l), operatr(op) {}
     Infix(const Token& t, Expression* l, const std::string& op, Expression* r)
-        : Expression(t), left(l), operatr(op), right(r) {}
+        : Expression(t), right(r), left(l), operatr(op) {}
 
     std::string to_string() const override
     {

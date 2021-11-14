@@ -1,6 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 #include "token.h"
+#include <cstddef>
 #include <string>
 
 class Lexer
@@ -8,8 +9,8 @@ class Lexer
 private:
     const std::string source;
     char current_char;
-    int read_position;
-    int position;
+    std::size_t read_position;
+    std::size_t position;
     int line;
 
     void read_character();

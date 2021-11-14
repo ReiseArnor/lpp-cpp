@@ -2,6 +2,7 @@
 #include "object.h"
 #include "builtin.h"
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <typeinfo>
@@ -173,7 +174,7 @@ static Environment* extend_function_environment(obj::Function* fn, const std::ve
     auto env = new Environment(fn->env);
     environments.push_back(env);
 
-    for(int i = 0; i < fn->parameters.size(); i++)
+    for(std::size_t i = 0; i < fn->parameters.size(); i++)
         env->set_item(fn->parameters.at(i)->value, args.at(i));
     
     return env;
@@ -193,7 +194,7 @@ Object* apply_function(Object* fn, const std::vector<Object*>& args, const int l
         auto function = static_cast<obj::Function*>(fn);
         auto extended_environment = extend_function_environment(function, args, line);
         if(!extended_environment)
-            return eval_errors.at(eval_errors.size() - 1);
+            return eval_errors.at(eval_errors.size() - 1UL);
 
         auto evaluated = evaluate(function->body, extended_environment);
         return unwrap_return_value(evaluated);
@@ -268,7 +269,7 @@ Object* evaluate_block_statements(Block* block, Environment* env)
     {
         result = evaluate(statement, env);
 
-        if(result && result->type() == ObjectType::RETURN
+        if((result && result->type() == ObjectType::RETURN)
             || result->type() == ObjectType::ERROR)
             return result;
     }

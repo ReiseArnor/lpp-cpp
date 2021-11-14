@@ -1,5 +1,6 @@
 #ifndef OBJECT_H
 #define OBJECT_H
+#include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
@@ -49,8 +50,8 @@ public:
 class Integer : public Object
 {
 public:
-    int value;
-    explicit Integer(int v) : value(v) {}
+    const std::size_t value;
+    explicit Integer(const std::size_t v) : value(v) {}
     ObjectType type() override { return ObjectType::INTEGER; }
     std::string inspect() override { return std::to_string(value); }
     std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::INTEGER); }
@@ -59,7 +60,7 @@ public:
 class Boolean : public Object
 {
 public:
-    bool value;
+    const bool value;
     explicit Boolean(bool v) : value(v) {}
     ObjectType type() override { return ObjectType::BOOLEAN; }
     std::string inspect() override { return value ? "verdadero" : "falso"; }
@@ -142,7 +143,7 @@ public:
 class String : public Object
 {
 public:
-    std::string value;
+    const std::string value;
     explicit String(const std::string& v) : value(v) {}
     ObjectType type() override { return ObjectType::STRING; }
     std::string inspect() override { return value; }

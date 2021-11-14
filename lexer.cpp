@@ -309,6 +309,7 @@ bool skip_whitespace(char c, int& line)
     {
         case '\n':
             line++;
+            [[fallthrough]];
         case '\r':
         case ' ':
         case '\t':
