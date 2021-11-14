@@ -2,14 +2,13 @@
 Platzi Programming Language interpreter made in C++
 
 # Dependencies
-1. Make
-2. CMake
-3. GCC >= 5, Clang >= 3.4 or MSVC >= 19.10
+1. CMake
+2. GCC >= 5, Clang >= 3.4 or MSVC >= 19.10
 
 # Installing dependencies
 ### For Arch/Manjaro (and their derivatives):
 ```bash
-sudo pacman -S make cmake gcc clang
+sudo pacman -S cmake gcc clang
 ```
 
 ### For Ubuntu/Debian (and their derivatives)
@@ -18,38 +17,35 @@ sudo apt install build-essential cmake clang-3.4
 ```
 ### For Fedora/CentOS (RedHat based distros and their derivatives)
 ```bash
-sudo dnf install make cmake gcc-c++ clang
+sudo dnf install cmake gcc-c++ clang
 ```
 ### For Mac OSX
 You need to install [Xcode](https://developer.apple.com/xcode/ "Xcode")
 ### For Windows
 You need to install [Visual Studio 2017](https://visualstudio.microsoft.com/es/vs/older-downloads/ "Visual Studio 2017") or [Visual Studio 2019](https://visualstudio.microsoft.com/es/vs/whatsnew/ "Visual Studio 2019")
 
-# Build the project
+# Release build
 To build the project run the following commands from the root directory.
 #### Linux/OSX
 ```bash
-mkdir build
-cmake -Bbuild -H.
-cmake --build build/
+cmake -S . -B build/Release -DCMAKE_BUILD_TYPE=Release
+cmake --build build/Release
 ```
 #### Windows
 if you have Visual Studio 2017 installed, use "Visual Studio 15 2017".
 ```bash
-mkdir build
-cmake -G "Visual Studio 16 2019" -Bbuild
-cmake --build build/
+cmake -G "Visual Studio 16 2019" -B build/Release -DCMAKE_BUILD_TYPE=Release
+cmake --build build/Release
 ```
-# Run test suite
+# Debug build and test suite
 
 To build the project and run the test suite run the following commands from
 the root directory.
 
 ```bash
-mkdir build
-cmake -DBUILD_TEST=ON -Bbuild -H.
-cmake --build build/
-cd build
+cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/Debug
+cd build/Debug
 ctest -VV
 ```
 # Run the interpreter
