@@ -9,17 +9,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Create Build Environment
-      run: mkdir build
-    
-    - name: Generating files
-      run: cmake -DBUILD_TEST=ON -Bbuild -H.
+    - name: Create Build Environment and Generate files
+      run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
       
     - name: Building
       run: cmake --build build/
       
     - name: Test
-      working-directory: ./build
+      working-directory: ./build/Debug
       run: ctest -VV
       
   build_osx:
@@ -28,17 +25,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Create Build Environment
-      run: mkdir build
-    
-    - name: Generating files
-      run: cmake -DBUILD_TEST=ON -Bbuild -H.
+    - name: Create Build Environment and Generate files
+      run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
       
     - name: Building
       run: cmake --build build/
 
     - name: Test
-      working-directory: ./build
+      working-directory: ./build/Debug
       run: ctest -VV
 
   build_windows:
@@ -48,15 +42,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Create Build Environment
-      run: mkdir build;
+    - name: Create Build Environment and Generete files
+      run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
     
-    - name: Generating files
-      run: cmake -DBUILD_TEST=ON -G "Visual Studio 16 2019" -Bbuild
-      
     - name: Building
       run: cmake --build build/ 
 
     - name: Test
-      working-directory: .\build
+      working-directory: .\build\Debug
       run: ctest -VV
