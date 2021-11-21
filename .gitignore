@@ -1,6 +1,8 @@
 /.vscode
 /build
+/.cache
 do_tests.lua
+compile_commands.json
 *.exe
 *.o
 *.s
