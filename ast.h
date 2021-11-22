@@ -6,11 +6,31 @@
 #include "token.h"
 
 namespace ast {
+enum class Node {
+    Block,
+    Boolean,
+    Call,
+    Expression,
+    ExpressionStatement,
+    Function,
+    Identifier,
+    If,
+    Infix,
+    Integer,
+    LetStatement,
+    Prefix,
+    Program,
+    ReturnStatement,
+    Statement,
+    StringLiteral
+};
+
 class ASTNode
 {
 public:
     virtual std::string token_literal() const = 0;
     virtual std::string to_string() const = 0;
+    virtual Node type() const = 0;
     virtual ~ASTNode(){}
 };
 
@@ -21,6 +41,7 @@ public:
     Statement() = default;
     explicit Statement(const Token& t) : token(t) {}
     std::string token_literal() const override { return token.literal; }
+    Node type() const override { return Node::Statement; }
 };
 
 class Expression : public ASTNode
@@ -31,6 +52,7 @@ public:
     explicit Expression(const Token& t) : token(t) {}
     std::string token_literal() const override { return token.literal; }
     std::string to_string() const override { return token.literal; }
+    Node type() const override { return Node::Expression; }
 };
 
 class Program : public ASTNode
@@ -43,6 +65,7 @@ public:
     std::vector<Statement*> statements;
 
     explicit Program(const std::vector<Statement*>& s) : statements(s) {}
+    Node type() const override { return Node::Program; }
 
     std::string token_literal() const override
     {
@@ -80,6 +103,7 @@ public:
     Identifier() = default;
     Identifier(const Token& t, const std::string& v)
         : Expression(t), value(v) {}
+    Node type() const override { return Node::Identifier; }
 
     std::string to_string() const override
     {
@@ -96,6 +120,7 @@ public:
     explicit LetStatement(const Token& token) : Statement(token), name(nullptr), value(nullptr) {}
     explicit LetStatement(const Token& token, Identifier* name, Expression* value)
         : Statement(token), name(name), value(value) {}
+    Node type() const override { return Node::LetStatement; }
 
     std::string to_string() const override
     {
@@ -119,6 +144,7 @@ public:
     explicit ReturnStatement(const Token& t) : Statement(t), return_value(nullptr) {}
     explicit ReturnStatement(const Token& t, Expression* rv)
         : Statement(t), return_value(rv) {}
+    Node type() const override { return Node::ReturnStatement; }
 
     std::string to_string() const override
     {
@@ -141,6 +167,7 @@ public:
         : Statement(t), expression(nullptr){}
     explicit ExpressionStatement(const Token& t, Expression* e)
         : Statement(t), expression(e) {}
+    Node type() const override { return Node::ExpressionStatement; }
 
     std::string to_string() const override
     {
@@ -161,6 +188,7 @@ public:
     explicit Integer(const Token& t) : Expression(t), value(0) {}
     Integer(const Token& t, const std::size_t v)
         : Expression(t), value(v) {}
+    Node type() const override { return Node::Integer; }
 
     std::string to_string() const override
     {
@@ -177,6 +205,7 @@ public:
         : Expression(t), operatr(op), right(nullptr) {}
     Prefix(const Token& t, const std::string& op, Expression* e)
         : Expression(t), operatr(op), right(e) {}
+    Node type() const override { return Node::Prefix; }
 
     std::string to_string() const override
     {
@@ -200,6 +229,7 @@ public:
         : Expression(t), right(nullptr), left(l), operatr(op) {}
     Infix(const Token& t, Expression* l, const std::string& op, Expression* r)
         : Expression(t), right(r), left(l), operatr(op) {}
+    Node type() const override { return Node::Infix; }
 
     std::string to_string() const override
     {
@@ -220,6 +250,7 @@ public:
     const bool value;
     explicit Boolean(const Token& t) : Expression(t), value(false) {}
     Boolean(const Token& t, const bool v) : Expression(t), value(v) {}
+    Node type() const override { return Node::Boolean; }
 
     std::string to_string() const override
     {
@@ -233,6 +264,7 @@ public:
     std::vector<Statement*> statements;
     Block(const Token& t, const std::vector<Statement*>& vs)
         : Statement(t), statements(vs) {}
+    Node type() const override { return Node::Block; }
 
     std::string to_string() const override
     {
@@ -261,6 +293,7 @@ public:
         : Expression(t), condition(cond), consequence(cons), alternative(nullptr) {}
     If(const Token& t, Expression* cond, Block* cons, Block* alt)
         : Expression(t), condition(cond), consequence(cons), alternative(alt) {}
+    Node type() const override { return Node::If; }
 
     std::string to_string() const override
     {
@@ -290,6 +323,7 @@ public:
         : Expression(t), parameters(p), body(nullptr) {}
     Function(const Token& t, const std::vector<Identifier*>& p, Block* b)
         :   Expression(t), parameters(p), body(b) {}
+    Node type() const override { return Node::Function; }
 
     std::string to_string() const override
     {
@@ -317,6 +351,7 @@ public:
         : Expression(t), function(f) {}
     Call(const Token& t, Expression* f, const std::vector<Expression*>& args)
         : Expression(t), function(f), arguments(args) {}
+    Node type() const override { return Node::Call; }
 
     std::string to_string() const override
     {
@@ -341,6 +376,7 @@ public:
     const std::string value;
     StringLiteral(const Token& t, const std::string& val)
         : Expression(t), value(val) {}
+    Node type() const override { return Node::StringLiteral; }
     std::string to_string() const override
     {
         return Expression::to_string();

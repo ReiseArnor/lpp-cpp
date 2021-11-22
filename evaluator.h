@@ -24,6 +24,7 @@ using obj::Error;
 using obj::Environment;
 using ast::LetStatement;
 using ast::Identifier;
+using ast::Node;
 
 static const char* WRONG_ARGS = "Cantidad errónea de argumentos para la función cerca de la línea %d, se esperaban %d pero se obtuvo %d";
 static const char* NOT_A_FUNCTION = "No es una function: %s cerca de la línea %d";
@@ -48,113 +49,120 @@ static Object* apply_function(Object*, const std::vector<Object*>&, const int);
 
 static Object* evaluate(ASTNode* node, Environment* env)
 {
-    auto node_type = typeid(*node).name();
+    auto node_type = node->type();
 
-    if(node_type == typeid(Program).name())
-    {
-        return evaluate_program(dynamic_cast<Program*>(node), env);
-    }
-    else if(node_type == typeid(ExpressionStatement).name())
-    {
-        auto cast_node = dynamic_cast<ExpressionStatement*>(node);
-        return evaluate(cast_node->expression, env);
-    }
-    else if(node_type == typeid(ast::Integer).name())
-    {
-        auto cast_node = dynamic_cast<ast::Integer*>(node);
-        auto integer = new obj::Integer(cast_node->value);
-        cleaner.push_back(integer);
-        return integer;
-    }
-    else if(node_type == typeid(ast::Boolean).name())
-    {
-        auto cast_node = dynamic_cast<ast::Boolean*>(node);
-        return to_boolean_object(cast_node->value);
-    }
-    else if(node_type == typeid(Prefix).name())
-    {
-        auto cast_node = dynamic_cast<Prefix*>(node);
-        assert(cast_node != nullptr);
+    switch (node_type) {
 
-        auto right = evaluate(cast_node->right, env);
-        assert(right != nullptr);
+        case Node::Program:
+            return evaluate_program(dynamic_cast<Program*>(node), env);
 
-        return evaluate_prefix_expression(cast_node->operatr, right, cast_node->token.line);
-    }
-    else if (node_type == typeid(Infix).name())
-    {
-        auto cast_node = dynamic_cast<Infix*>(node);
-        assert(cast_node->left && cast_node->right);
+        case Node::ExpressionStatement:
+            {
+                auto cast_exp_st = dynamic_cast<ExpressionStatement*>(node);
+                return evaluate(cast_exp_st->expression, env);
+            }
 
-        auto left = evaluate(cast_node->left, env);
-        auto right = evaluate(cast_node->right, env);
+        case Node::Integer:
+            {
+                auto cast_int = dynamic_cast<ast::Integer*>(node);
+                auto integer = new obj::Integer(cast_int->value);
+                cleaner.push_back(integer);
+                return integer;
+            }
 
-        assert(left && right);
-        return evaluate_infix_expression(cast_node->operatr, left, right, cast_node->token.line);
-    }
-    else if (node_type == typeid(ast::Block).name())
-    {
-        auto cast_node = dynamic_cast<Block*>(node);
-        return evaluate_block_statements(cast_node, env);
-    }
-    else if (node_type == typeid(ast::If).name()) 
-    {
-        auto cast_node = dynamic_cast<ast::If*>(node);
-        return evaluate_if_expression(cast_node, env);
-    }
-    else if(node_type == typeid(ReturnStatement).name())
-    {
-        auto cast_node = dynamic_cast<ReturnStatement*>(node);
+        case Node::Boolean:
+            {
+                auto cast_bool = dynamic_cast<ast::Boolean*>(node);
+                return to_boolean_object(cast_bool->value);
+            }
 
-        assert(cast_node->return_value);
-        auto value = evaluate(cast_node->return_value, env);
-        assert(value);
-        auto return_val = new obj::Return(value);
-        cleaner.push_back(return_val);
-        return return_val;
-    }
-    else if(node_type == typeid(LetStatement).name())
-    {
-        auto cast_node = dynamic_cast<LetStatement*>(node);
-        assert(cast_node->value);
-        auto value = evaluate(cast_node->value, env);
-        assert(cast_node->name);
+        case Node::Prefix:
+            {
+                auto cast_prefix = dynamic_cast<Prefix*>(node);
+                assert(cast_prefix != nullptr);
+                auto right = evaluate(cast_prefix->right, env);
+                assert(right != nullptr);
+                return evaluate_prefix_expression(cast_prefix->operatr, right, cast_prefix->token.line);
+            }
 
-        env->set_item(cast_node->name->value, value);
-        return value;
-    }
-    else if(node_type == typeid(Identifier).name())
-    {
-        auto cast_node = dynamic_cast<Identifier*>(node);
-        assert(cast_node);
-        return evaluate_identifier(cast_node, env, cast_node->token.line);
-    }
-    else if (node_type == typeid(ast::Function).name()) 
-    {
-        auto cast_node = dynamic_cast<ast::Function*>(node);
-        assert(cast_node);
-        auto func = new obj::Function(cast_node->parameters, cast_node->body, env);
-        cleaner.push_back(func);
-        return func;
-    }
-    else if (node_type == typeid(ast::Call).name())
-    {
-        auto cast_node = dynamic_cast<ast::Call*>(node);
+        case Node::Infix:
+            {
+                auto cast_infix = dynamic_cast<Infix*>(node);
+                assert(cast_infix->left && cast_infix->right);
+                auto left = evaluate(cast_infix->left, env);
+                auto right = evaluate(cast_infix->right, env);
+                assert(left && right);
+                return evaluate_infix_expression(cast_infix->operatr, left, right, cast_infix->token.line);
+            }
 
-        auto function = evaluate(cast_node->function, env);
-        auto args = evaluate_expression(cast_node->arguments, env);
-    
-        return apply_function(function, args, cast_node->token.line);
-    }
-    else if (node_type == typeid(ast::StringLiteral).name())
-    {
-        auto cast_node = dynamic_cast<ast::StringLiteral*>(node);
-        auto str = new obj::String(cast_node->value);
-        cleaner.push_back(str);
-        return str;
-    }
+        case Node::Block:
+            {
+                auto cast_block = dynamic_cast<Block*>(node);
+                return evaluate_block_statements(cast_block, env);
+            }
 
-    return nullptr;
+        case Node::If:
+            {
+                auto cast_if = dynamic_cast<ast::If*>(node);
+                return evaluate_if_expression(cast_if, env);
+            }
+
+        case Node::ReturnStatement:
+            {
+                auto cast_rtn_st = dynamic_cast<ReturnStatement*>(node);
+                assert(cast_rtn_st->return_value);
+                auto value = evaluate(cast_rtn_st->return_value, env);
+                assert(value);
+                auto return_val = new obj::Return(value);
+                cleaner.push_back(return_val);
+                return return_val;
+            }
+
+        case Node::LetStatement:
+            {
+                auto cast_let_st = dynamic_cast<LetStatement*>(node);
+                assert(cast_let_st->value);
+                auto value = evaluate(cast_let_st->value, env);
+                assert(cast_let_st->name);
+                env->set_item(cast_let_st->name->value, value);
+                return value;
+            }
+
+        case Node::Identifier:
+            {
+                auto cast_ident = dynamic_cast<Identifier*>(node);
+                assert(cast_ident);
+                return evaluate_identifier(cast_ident, env, cast_ident->token.line);
+            }
+
+        case Node::Function:
+            {
+                auto cast_func = dynamic_cast<ast::Function*>(node);
+                assert(cast_func);
+                auto func = new obj::Function(cast_func->parameters, cast_func->body, env);
+                cleaner.push_back(func);
+                return func;
+            }
+
+        case Node::Call:
+            {
+                auto cast_call = dynamic_cast<ast::Call*>(node);
+                auto function = evaluate(cast_call->function, env);
+                auto args = evaluate_expression(cast_call->arguments, env);
+                return apply_function(function, args, cast_call->token.line);
+            }
+
+        case Node::StringLiteral:
+            {
+                auto cast_str_lit = dynamic_cast<ast::StringLiteral*>(node);
+                auto str = new obj::String(cast_str_lit->value);
+                cleaner.push_back(str);
+                return str;
+            }
+
+        default:
+            return nullptr;
+    }
 }
 
 static Environment* extend_function_environment(obj::Function* fn, const std::vector<Object*>& args, const int line)
@@ -170,13 +178,13 @@ static Environment* extend_function_environment(obj::Function* fn, const std::ve
         eval_errors.push_back(error);
         return nullptr;
     }
-    
+
     auto env = new Environment(fn->env);
     environments.push_back(env);
 
     for(std::size_t i = 0; i < fn->parameters.size(); i++)
         env->set_item(fn->parameters.at(i)->value, args.at(i));
-    
+
     return env;
 }
 
@@ -204,7 +212,7 @@ Object* apply_function(Object* fn, const std::vector<Object*>& args, const int l
         auto function = static_cast<obj::Builtin*>(fn);
         return function->fn(args, line);
     }
-    
+
     auto error = new Error{ format(
                     NOT_A_FUNCTION,
                     fn->type_string().c_str(),
@@ -225,7 +233,7 @@ Object* evaluate_program(Program* program, Environment* env)
             auto cast_result = static_cast<obj::Return*>(result);
             return cast_result->value;
         }
-        else if (typeid(*result) == typeid(obj::Error)) 
+        else if (typeid(*result) == typeid(obj::Error))
             return result;
     }
 
@@ -319,14 +327,14 @@ Object* evaluate_prefix_expression(const std::string& operatr, Object* right, co
     {
         auto error = new Error{ format(
                     UNKNOWN_PREFIX_OPERATION,
-                    operatr.c_str(), 
+                    operatr.c_str(),
                     right->type_string().c_str(),
                     line
                     ) };
         eval_errors.push_back(error);
         return error;
     }
-        
+
 }
 
 static Object* evaluate_integer_infix_expression(const std::string& operatr, Object* left, Object* right, const int line)
@@ -378,7 +386,7 @@ static Object* evaluate_integer_infix_expression(const std::string& operatr, Obj
         eval_errors.push_back(error);
         return error;
     }
-        
+
 }
 
 static Object* evaluate_string_infix_expression(const std::string& operatr, Object* left, Object* right, const int line)
@@ -396,7 +404,7 @@ static Object* evaluate_string_infix_expression(const std::string& operatr, Obje
         return to_boolean_object(left_value == right_value);
     else if(operatr == "!=")
         return to_boolean_object(left_value != right_value);
-    
+
     auto error = new Error{ format(
                 UNKNOWN_INFIX_OPERATION,
                 left->type_string().c_str(),
@@ -416,7 +424,7 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
         return evaluate_string_infix_expression(operatr, left, right, line);
     else if(operatr == "==")
         return to_boolean_object(
-                dynamic_cast<obj::Boolean*>(left)->value == 
+                dynamic_cast<obj::Boolean*>(left)->value ==
                 dynamic_cast<obj::Boolean*>(right)->value
                 );
     else if(operatr == "!=")
@@ -436,7 +444,7 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
         eval_errors.push_back(error);
         return error;
     }
-       
+
 
     auto error = new Error{ format(
                 UNKNOWN_INFIX_OPERATION,
@@ -475,7 +483,7 @@ std::vector<Object*> evaluate_expression(const std::vector<Expression*>& express
         if(evaluated)
             result.push_back(evaluated);
     }
-    return result;    
+    return result;
 }
 
 Object* to_boolean_object(bool value)
