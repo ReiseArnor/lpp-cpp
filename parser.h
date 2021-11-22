@@ -3,6 +3,7 @@
 #include "ast.h"
 #include "lexer.h"
 #include "token.h"
+#include <cstddef>
 #include <cstdlib>
 #include <functional>
 #include <new>
@@ -104,7 +105,7 @@ private:
     PrefixParseFn parse_integer = [&]() -> Expression*
     {
         try{
-            return new Integer(current_token, std::stoi(current_token.literal));
+            return new Integer(current_token, static_cast<std::size_t>(std::stoi(current_token.literal)));
         } catch(const std::invalid_argument& e) {
             std::string error = "No se ha podido parsear ";
             error.append(current_token.literal + " como entero.");

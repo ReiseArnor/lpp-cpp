@@ -44,7 +44,7 @@ public:
 
     explicit Program(const std::vector<Statement*>& s) : statements(s) {}
 
-    std::string token_literal() const override 
+    std::string token_literal() const override
     {
         if(statements.size() > 0)
             return statements.at(0)->token_literal();
@@ -61,7 +61,7 @@ public:
 
     bool operator==(const Program& other_program) const
     {
-        if(to_string() == other_program.to_string())   
+        if(to_string() == other_program.to_string())
             return true;
         return false;
     }
@@ -76,9 +76,9 @@ public:
 class Identifier : public Expression
 {
 public:
-    std::string value;
+    const std::string value;
     Identifier() = default;
-    Identifier(const Token& t, const std::string& v) 
+    Identifier(const Token& t, const std::string& v)
         : Expression(t), value(v) {}
 
     std::string to_string() const override
@@ -137,7 +137,7 @@ class ExpressionStatement : public Statement
 public:
     Expression* expression;
     ExpressionStatement() = default;
-    explicit ExpressionStatement(const Token& t) 
+    explicit ExpressionStatement(const Token& t)
         : Statement(t), expression(nullptr){}
     explicit ExpressionStatement(const Token& t, Expression* e)
         : Statement(t), expression(e) {}
@@ -157,9 +157,9 @@ public:
 class Integer : public Expression
 {
 public:
-    int value;
+    const std::size_t value;
     explicit Integer(const Token& t) : Expression(t), value(0) {}
-    Integer(const Token& t, const int v) 
+    Integer(const Token& t, const std::size_t v)
         : Expression(t), value(v) {}
 
     std::string to_string() const override
@@ -171,12 +171,12 @@ public:
 class Prefix : public Expression
 {
 public:
-    std::string operatr;
+    const std::string operatr;
     Expression* right;
     Prefix(const Token& t, const std::string& op)
         : Expression(t), operatr(op), right(nullptr) {}
     Prefix(const Token& t, const std::string& op, Expression* e)
-        : Expression(t), operatr(op), right(e) {} 
+        : Expression(t), operatr(op), right(e) {}
 
     std::string to_string() const override
     {
@@ -195,7 +195,7 @@ class Infix : public Expression
 public:
     Expression* right;
     Expression* left;
-    std::string operatr;
+    const std::string operatr;
     Infix(const Token& t, Expression* l, const std::string& op)
         : Expression(t), right(nullptr), left(l), operatr(op) {}
     Infix(const Token& t, Expression* l, const std::string& op, Expression* r)
@@ -217,8 +217,8 @@ public:
 class Boolean : public Expression
 {
 public:
-    bool value;
-    explicit Boolean(const Token& t) : Expression(t) {}
+    const bool value;
+    explicit Boolean(const Token& t) : Expression(t), value(false) {}
     Boolean(const Token& t, const bool v) : Expression(t), value(v) {}
 
     std::string to_string() const override
@@ -281,7 +281,7 @@ public:
     }
 };
 
-class Function : public Expression 
+class Function : public Expression
 {
 public:
     std::vector<Identifier*> parameters;
@@ -297,7 +297,7 @@ public:
         for(auto s : parameters)
             params.append(s->to_string() + ", ");
         params.erase(params.size() - 2, 2);
-        return token_literal() + "(" + params + ")" + "{" + body->to_string() + "}"; 
+        return token_literal() + "(" + params + ")" + "{" + body->to_string() + "}";
     }
 
     ~Function()
@@ -338,7 +338,7 @@ public:
 class StringLiteral : public Expression
 {
 public:
-    std::string value;
+    const std::string value;
     StringLiteral(const Token& t, const std::string& val)
         : Expression(t), value(val) {}
     std::string to_string() const override
@@ -354,17 +354,17 @@ public:
     Programs_Guard() = default;
     void push_back(Program* p) { programs.push_back(p); }
 
-    Program* new_program(const std::vector<Statement*>& statements) 
+    Program* new_program(const std::vector<Statement*>& statements)
     {
         auto prog = new Program(statements);
         programs.push_back(prog);
         return prog;
     }
 
-    ~Programs_Guard() 
-    { 
-        for(auto p : programs) 
-            delete p; 
+    ~Programs_Guard()
+    {
+        for(auto p : programs)
+            delete p;
     }
 };
 

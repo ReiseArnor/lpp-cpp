@@ -24,7 +24,7 @@ static std::string getNameForValue(Mapping a, V value) {
 {
     va_list args;
     va_start (args, str);
-    size_t len = std::vsnprintf(NULL, 0, str, args);
+    size_t len = static_cast<size_t>(std::vsnprintf(NULL, 0, str, args));
     va_end (args);
     std::vector<char> vec(len + 1);
     va_start (args, str);
