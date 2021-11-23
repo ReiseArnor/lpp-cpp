@@ -43,7 +43,7 @@ static Object* evaluate_prefix_expression(const std::string&, Object*, const int
 static Object* evaluate_infix_expression(const std::string&, Object*, Object*, const int);
 static Object* evaluate_if_expression(If*, Environment*);
 static Object* evaluate_block_statements(Block*, Environment*);
-static Object* evaluate_identifier(Identifier*, Environment*, const int);
+static Object* evaluate_identifier(Identifier*, Environment*);
 static std::vector<Object*> evaluate_expression(const std::vector<Expression*>&, Environment*);
 static Object* apply_function(Object*, const std::vector<Object*>&, const int);
 
@@ -132,7 +132,7 @@ static Object* evaluate(ASTNode* node, Environment* env)
             {
                 auto cast_ident = dynamic_cast<Identifier*>(node);
                 assert(cast_ident);
-                return evaluate_identifier(cast_ident, env, cast_ident->token.line);
+                return evaluate_identifier(cast_ident, env);
             }
 
         case Node::Function:
@@ -159,6 +159,9 @@ static Object* evaluate(ASTNode* node, Environment* env)
                 cleaner.push_back(str);
                 return str;
             }
+
+        case Node::Null:
+            return _NULL.get();
 
         default:
             return nullptr;
@@ -457,21 +460,14 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
     return error;
 }
 
-Object* evaluate_identifier(Identifier* ident, Environment* env, const int line)
+Object* evaluate_identifier(Identifier* ident, Environment* env)
 {
     if(env->item_exist(ident->value))
         return env->get_item(ident->value);
     else if(BUILTINS.find(ident->value) != BUILTINS.end())
         return &BUILTINS.at(ident->value);
     else
-    {
-        auto error = new Error{ format(
-                    UNKNOWN_IDENTIFIER,
-                    ident->value.c_str(),
-                    line) };
-        eval_errors.push_back(error);
-        return error;
-    }
+        return _NULL.get();
 }
 
 std::vector<Object*> evaluate_expression(const std::vector<Expression*>& expressions, Environment* env)

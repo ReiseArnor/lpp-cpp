@@ -28,6 +28,7 @@ using ast::If;
 using ast::Function;
 using ast::Call;
 using ast::StringLiteral;
+using ast::Null;
 
 using PrefixParseFn = std::function<Expression*()>;
 using InfixParseFn = std::function<Expression*(Expression*)>;
@@ -68,7 +69,7 @@ private:
     PrefixParseFns prefix_parse_fns;
     InfixParseFns infix_parse_fns;
     std::vector<std::string> errors_list;
-    
+
     Statement* parse_statement();
     LetStatement* parse_let_statement();
     ReturnStatement* parse_return_statement();
@@ -91,10 +92,10 @@ public:
     std::vector<std::string>& errors();
 
 private:
-    PrefixParseFn parse_identifier = [&]() -> Expression* 
+    PrefixParseFn parse_identifier = [&]() -> Expression*
     {
         try{
-            return new Identifier(Token(current_token), current_token.literal); 
+            return new Identifier(Token(current_token), current_token.literal);
         } catch(const std::bad_alloc& e)
         {
             errors_list.push_back("No se ha podido reservar espacio en memoria.");
@@ -123,7 +124,7 @@ private:
 
         advance_tokens();
         prefix_expression->right = parse_expression(Precedence::PREFIX);
-        
+
         return prefix_expression.release();
     };
 
@@ -138,14 +139,25 @@ private:
         }
     };
 
+    PrefixParseFn parse_null = [&]() -> Expression*
+    {
+        try{
+            return new Null(current_token);
+        } catch(const std::bad_alloc& e)
+        {
+            errors_list.push_back("No se ha podido reservar espacio en memoria.");
+            return nullptr;
+        }
+    };
+
     PrefixParseFn parse_grouped_expression = [&]() -> Expression*
     {
         advance_tokens();
         auto expression = std::unique_ptr<Expression>(parse_expression(Precedence::LOWEST));
-        
+
         if (!expected_token(TokenType::RPAREN))
             return nullptr;
-        
+
         return expression.release();
     };
 
@@ -161,7 +173,7 @@ private:
 
         if(!expected_token(TokenType::RPAREN))
             return nullptr;
-        
+
         if(!expected_token(TokenType::LBRACE))
             return nullptr;
         if_expression->consequence = parse_block();
@@ -186,9 +198,9 @@ private:
 
         if(!expected_token(TokenType::LBRACE))
             return nullptr;
-        
+
         function->body = parse_block();
-        
+
         return function.release();
     };
 
@@ -201,7 +213,7 @@ private:
     InfixParseFn parse_infix_expression = [&](Expression* left) -> Expression*
     {
         auto infix = std::make_unique<Infix>(current_token, left, current_token.literal);
-        
+
         auto precedence = current_precedence();
         advance_tokens();
         infix->right = parse_expression(precedence);

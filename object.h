@@ -13,7 +13,7 @@
 using ast::Identifier;
 using ast::Block;
 
-namespace obj 
+namespace obj
 {
 enum class ObjectType
 {
@@ -41,9 +41,9 @@ const std::array<const NameValuePair<ObjectType>, 8> objects_enums_string {{
 class Object
 {
 public:
-    virtual ObjectType type() = 0;
-    virtual std::string inspect() = 0;
-    virtual std::string type_string() = 0; 
+    virtual ObjectType type() const = 0;
+    virtual std::string inspect() const = 0;
+    virtual std::string type_string() const = 0;
     virtual ~Object(){}
 };
 
@@ -52,9 +52,9 @@ class Integer : public Object
 public:
     const std::size_t value;
     explicit Integer(const std::size_t v) : value(v) {}
-    ObjectType type() override { return ObjectType::INTEGER; }
-    std::string inspect() override { return std::to_string(value); }
-    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::INTEGER); }
+    ObjectType type() const override { return ObjectType::INTEGER; }
+    std::string inspect() const override { return std::to_string(value); }
+    std::string type_string() const override { return getNameForValue(objects_enums_string, ObjectType::INTEGER); }
 };
 
 class Boolean : public Object
@@ -62,17 +62,17 @@ class Boolean : public Object
 public:
     const bool value;
     explicit Boolean(bool v) : value(v) {}
-    ObjectType type() override { return ObjectType::BOOLEAN; }
-    std::string inspect() override { return value ? "verdadero" : "falso"; }
-    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::BOOLEAN); }
+    ObjectType type() const override { return ObjectType::BOOLEAN; }
+    std::string inspect() const override { return value ? "verdadero" : "falso"; }
+    std::string type_string() const override { return getNameForValue(objects_enums_string, ObjectType::BOOLEAN); }
 };
 
 class Null : public Object
 {
 public:
-    ObjectType type() override { return ObjectType::_NULL;}
-    std::string inspect() override { return "nulo"; }
-    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::_NULL); }
+    ObjectType type() const override { return ObjectType::_NULL;}
+    std::string inspect() const override { return "nulo"; }
+    std::string type_string() const override { return getNameForValue(objects_enums_string, ObjectType::_NULL); }
 };
 
 class Return : public Object
@@ -80,9 +80,9 @@ class Return : public Object
 public:
     Object* value;
     explicit Return(Object* v) : value(v) {}
-    ObjectType type() override { return ObjectType::RETURN; }
-    std::string inspect() override { return value->inspect(); }
-    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::RETURN); }
+    ObjectType type() const override { return ObjectType::RETURN; }
+    std::string inspect() const override { return value->inspect(); }
+    std::string type_string() const override { return getNameForValue(objects_enums_string, ObjectType::RETURN); }
 };
 
 class Error : public Object
@@ -90,9 +90,9 @@ class Error : public Object
 public:
     const std::string message;
     explicit Error(const std::string& msg) : message(msg) {}
-    ObjectType type() override { return ObjectType::ERROR; }
-    std::string inspect() override { return message; }
-    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::ERROR); }
+    ObjectType type() const override { return ObjectType::ERROR; }
+    std::string inspect() const override { return message; }
+    std::string type_string() const override { return getNameForValue(objects_enums_string, ObjectType::ERROR); }
 };
 
 class Environment
@@ -106,14 +106,14 @@ public:
     void del_item(const std::string& key){ store.erase(key); }
 
     Object* get_item(const std::string& key)
-    { 
+    {
         if(store[key])
             return store[key];
         else
             return outer->get_item(key);
     }
 
-    bool item_exist(const std::string& key) 
+    bool item_exist(const std::string& key)
     {
         if(store.find(key) != store.end())
             return true;
@@ -132,11 +132,11 @@ public:
     Environment* env;
     Function(const std::vector<Identifier*>& params, Block* b, Environment* env )
         : parameters(params), body(b), env(env) {}
-    ObjectType type() override { return ObjectType::FUNCTION; }
-    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::FUNCTION); }
-    std::string inspect() override 
+    ObjectType type() const override { return ObjectType::FUNCTION; }
+    std::string type_string() const override { return getNameForValue(objects_enums_string, ObjectType::FUNCTION); }
+    std::string inspect() const override
     {
-       return format(FUNCTION_NAME, static_cast<void*>(this));
+       return format(FUNCTION_NAME, static_cast<const void*>(this));
     }
 };
 
@@ -145,9 +145,9 @@ class String : public Object
 public:
     const std::string value;
     explicit String(const std::string& v) : value(v) {}
-    ObjectType type() override { return ObjectType::STRING; }
-    std::string inspect() override { return value; }
-    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::STRING); }
+    ObjectType type() const override { return ObjectType::STRING; }
+    std::string inspect() const override { return value; }
+    std::string type_string() const override { return getNameForValue(objects_enums_string, ObjectType::STRING); }
 };
 
 using BuiltinFunction = std::function<Object*(const std::vector<Object*>&, const int)>;
@@ -157,9 +157,9 @@ class Builtin : public Object
 public:
     const BuiltinFunction& fn;
     explicit Builtin(const BuiltinFunction& builtin_fn) : fn(builtin_fn) {}
-    ObjectType type() override { return ObjectType::BUILTIN; }
-    std::string inspect() override { return "builtin function"; }
-    std::string type_string() override { return getNameForValue(objects_enums_string, ObjectType::BUILTIN); }
+    ObjectType type() const override { return ObjectType::BUILTIN; }
+    std::string inspect() const override { return "builtin function"; }
+    std::string type_string() const override { return getNameForValue(objects_enums_string, ObjectType::BUILTIN); }
 };
 
 } // namespace obj

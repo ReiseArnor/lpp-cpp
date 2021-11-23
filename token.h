@@ -30,6 +30,7 @@ enum class TokenType
     NEGATION,
     _TRUE,
     _FALSE,
+    _NULL,
     IF,
     ELSE,
     RETURN,
@@ -38,7 +39,7 @@ enum class TokenType
     STRING
 };
 
-const std::array<const NameValuePair<TokenType>, 28> tokens_enums_strings {{
+const std::array<const NameValuePair<TokenType>, 29> tokens_enums_strings {{
     {TokenType::ASSIGN, "ASSIGN"},
     {TokenType::COMMA, "COMMA\t"},
     {TokenType::_EOF, "EOF\t"},
@@ -61,6 +62,7 @@ const std::array<const NameValuePair<TokenType>, 28> tokens_enums_strings {{
     {TokenType::NEGATION, "NEGATION"},
     {TokenType::_TRUE, "TRUE\t"},
     {TokenType::_FALSE, "FALSE\t"},
+    {TokenType::_NULL, "NULL\t"},
     {TokenType::IF, "IF\t"},
     {TokenType::ELSE, "ELSE\t"},
     {TokenType::RETURN, "RETURN"},
@@ -77,12 +79,12 @@ public:
     int line;
 
     Token() = default;
-    Token(TokenType t, const char* l, int line = 1, std::size_t s = 1) : literal(l, s), token_type(t), line(line) {}
-    Token(TokenType t, const char* b, const char* e, int line = 1) : literal(b, e), token_type(t), line(line) {}
-    Token(TokenType t, const std::string& s, int line = 1) : literal(s), token_type(t), line(line) {}
+    Token(const TokenType t, const char* l, const int line = 1, const std::size_t s = 1) : literal(l, s), token_type(t), line(line) {}
+    Token(const TokenType t, const char* b, const char* e, const int line = 1) : literal(b, e), token_type(t), line(line) {}
+    Token(const TokenType t, const std::string& s, const int line = 1) : literal(s), token_type(t), line(line) {}
 
     bool operator==(const Token& r) const noexcept
-    {   
+    {
         if (token_type != r.token_type || literal != r.literal)
             return false;
         return true;

@@ -8,6 +8,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <iostream>
 using namespace std;
 using obj::Object;
 using ast::Program;
@@ -84,6 +85,24 @@ TEST_CASE("Integer evaluation", "[evaluator]")
     };
 
     eval_and_test_objects(tests);
+}
+
+TEST_CASE("Null value", "[evaluator]")
+{
+    vector<string> tests {
+        "nulo",
+        "a",
+        "b",
+        "variable a = nulo; a",
+        "variable a = nulo; variable b = a; b"
+    };
+    int c = 0;
+    for(auto& s : tests)
+    {
+        std::cout << c++;
+        auto evaluated = evaluate_tests(s);
+        test_object(evaluated);
+    }
 }
 
 TEST_CASE("Boolean evaluation", "[evaluator]")
@@ -202,11 +221,10 @@ TEST_CASE("Error handling")
             }",
         "Operador desconocido: BOOLEAN / BOOLEAN cerca de la línea 4"
         },
-        {"foobar;", "Identificador sin definir: \"foobar\" cerca de la línea 1"},
         {"\"foo\" - \"bar\";", "Operador desconocido: STRING - STRING cerca de la línea 1"},
-        {"longitud(1);", 
+        {"longitud(1);",
             "Argumento para longitud sin soporte, se recibió INTEGER cerca de la línea 1"},
-        {"longitud(\"uno\", \"dos\");", 
+        {"longitud(\"uno\", \"dos\");",
             "Número incorrecto de argumentos para longitud, se recibieron 2, se esperaba 1, cerca de la línea 1"}
         };
 
@@ -241,7 +259,7 @@ TEST_CASE("Function evaluation")
     auto evaluated = static_cast<obj::Function*>(evaluate(&program, env));
 
     REQUIRE(evaluated != nullptr);
-    
+
     REQUIRE(evaluated->parameters.size() == 1);
     REQUIRE(evaluated->parameters.at(0)->to_string() == "x");
     REQUIRE(evaluated->body->to_string() == "(x + 2)");
@@ -298,7 +316,7 @@ TEST_CASE("String evaluation")
     for(auto& t : tests)
     {
         auto evaluated = static_cast<String*>(evaluate_tests(get<0>(t)));
-        REQUIRE(evaluated->value == get<1>(t)); 
+        REQUIRE(evaluated->value == get<1>(t));
     }
 }
 
@@ -318,7 +336,7 @@ TEST_CASE("String concatenation")
     for(auto& t : tests)
     {
         auto evaluated = static_cast<String*>(evaluate_tests(get<0>(t)));
-        REQUIRE(evaluated->value == get<1>(t)); 
+        REQUIRE(evaluated->value == get<1>(t));
     }
 }
 

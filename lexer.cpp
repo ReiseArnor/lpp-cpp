@@ -10,7 +10,7 @@ bool is_number(char);
 bool is_identifier(char);
 bool skip_whitespace(char,int&);
 
-Lexer::Lexer(const string& src) 
+Lexer::Lexer(const string& src)
     : source(src), current_char(' '), read_position(0), position(0), line(1) {}
 
  void Lexer::read_character()
@@ -31,7 +31,7 @@ Lexer::Lexer(const string& src)
     while (skip_whitespace(current_char, line))
         read_character();
 
-    switch (current_char) 
+    switch (current_char)
     {
         case 'a':
         case 'b':
@@ -98,9 +98,9 @@ Lexer::Lexer(const string& src)
         case '9':
             return read_number();
         case '=':
-            if(peek_character() == '=') 
+            if(peek_character() == '=')
             {   read_position++;
-                return Token { TokenType::EQ, "==", line, 2 }; } 
+                return Token { TokenType::EQ, "==", line, 2 }; }
             return Token { TokenType::ASSIGN, &current_char, line };
         case '+':
             return Token { TokenType::PLUS, &current_char, line };
@@ -111,7 +111,7 @@ Lexer::Lexer(const string& src)
         case '*':
             return Token { TokenType::MULTIPLICATION, &current_char, line };
         case '!':
-            if(peek_character() == '=') 
+            if(peek_character() == '=')
             {   read_position++;
                 return Token { TokenType::NOT_EQ, "!=", line, 2 }; }
             return Token { TokenType::NEGATION, &current_char, line };
@@ -171,7 +171,7 @@ Token Lexer::read_string(char quote)
     read_character();
     if(current_char == quote)
         return Token { TokenType::STRING, string(""), line};
-    
+
     const char* begin = &source.at(position);
     const char* end = begin;
     while(current_char != '\0')
@@ -189,19 +189,20 @@ Token Lexer::read_string(char quote)
 
 Token Lexer::keyword(const string& s) const
 {
-    map<string, TokenType> keywords = {
+    static map<string, TokenType> keywords = {
         {"variable", TokenType::LET},
         {"procedimiento", TokenType::FUNCTION},
         {"regresa", TokenType::RETURN},
         {"si", TokenType::IF},
         {"si_no", TokenType::ELSE},
         {"verdadero", TokenType::_TRUE},
-        {"falso", TokenType::_FALSE}
+        {"falso", TokenType::_FALSE},
+        {"nulo", TokenType::_NULL}
     };
 
     if(keywords.find(s) != keywords.end())
         return Token(keywords[s], s, line);
-    
+
     return Token(TokenType::IDENT, s, line);
 }
 
@@ -212,7 +213,7 @@ char Lexer::peek_character() const
 
 bool is_identifier(char c)
 {
-    switch (c) 
+    switch (c)
     {
         case 'a':
         case 'b':
@@ -285,7 +286,7 @@ bool is_identifier(char c)
 
 bool is_number(char c)
 {
-    switch (c) 
+    switch (c)
     {
         case '0':
         case '1':

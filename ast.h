@@ -18,6 +18,7 @@ enum class Node {
     Infix,
     Integer,
     LetStatement,
+    Null,
     Prefix,
     Program,
     ReturnStatement,
@@ -380,6 +381,18 @@ public:
     std::string to_string() const override
     {
         return Expression::to_string();
+    }
+};
+
+class Null : public Expression
+{
+public:
+    explicit Null(const Token& t) : Expression(t) {}
+    Node type() const override { return Node::Null; }
+
+    std::string to_string() const override
+    {
+        return token_literal();
     }
 };
 

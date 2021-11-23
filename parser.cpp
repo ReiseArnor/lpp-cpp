@@ -29,7 +29,7 @@ vector<Statement*> Parser::parse_program()
             statements.push_back(statement);
         advance_tokens();
     }
-    return statements; 
+    return statements;
 }
 
 Statement* Parser::parse_statement()
@@ -48,7 +48,7 @@ LetStatement* Parser::parse_let_statement()
 
     if(!expected_token(TokenType::IDENT))
         return nullptr;
-    
+
     let_statement->name = static_cast<Identifier*>(parse_identifier());
 
     if(!expected_token(TokenType::ASSIGN))
@@ -56,7 +56,7 @@ LetStatement* Parser::parse_let_statement()
 
     advance_tokens();
     let_statement->value = parse_expression(Precedence::LOWEST);
-    
+
     if(peek_token.token_type == TokenType::SEMICOLON)
         advance_tokens();
 
@@ -83,7 +83,7 @@ ExpressionStatement* Parser::parse_expression_statements()
     expression_statement->expression = parse_expression(Precedence::LOWEST);
     if(peek_token.token_type == TokenType::SEMICOLON)
         advance_tokens();
-    
+
     return expression_statement.release();
 }
 
@@ -94,7 +94,7 @@ Expression* Parser::parse_expression(Precedence precedence)
         auto prefix_parse_fn = prefix_parse_fns[current_token.token_type];
         auto left_expression = prefix_parse_fn();
 
-        while (peek_token.token_type != TokenType::SEMICOLON && precedence < peek_precedence()) 
+        while (peek_token.token_type != TokenType::SEMICOLON && precedence < peek_precedence())
         {
             auto infix_parse_fn = infix_parse_fns[peek_token.token_type];
             advance_tokens();
@@ -109,14 +109,14 @@ Expression* Parser::parse_expression(Precedence precedence)
         error.append(current_token.literal + " cerca de la línea " + to_string(current_token.line) + "\n");
         errors_list.push_back(error);
         return nullptr;
-    } 
+    }
 }
 
 Block* Parser::parse_block()
 {
     auto block_statement = make_unique<Block>(current_token, vector<Statement*>());
     advance_tokens();
-    
+
     while (current_token.token_type != TokenType::RBRACE && current_token.token_type != TokenType::_EOF)
     {
         auto statement = parse_statement();
@@ -139,7 +139,7 @@ vector<Identifier*> Parser::parse_function_parameters()
     auto identifier = new Identifier(current_token, current_token.literal);
     params.push_back(identifier);
 
-    while (peek_token.token_type == TokenType::COMMA) 
+    while (peek_token.token_type == TokenType::COMMA)
     {
         advance_tokens();
         advance_tokens();
@@ -168,7 +168,7 @@ vector<Expression*> Parser::parse_call_arguments()
     if ((expression = parse_expression(Precedence::LOWEST)))
         arguments.push_back(expression);
 
-    while (peek_token.token_type == TokenType::COMMA) 
+    while (peek_token.token_type == TokenType::COMMA)
     {
         advance_tokens();
         advance_tokens();
@@ -178,7 +178,7 @@ vector<Expression*> Parser::parse_call_arguments()
 
     if (!expected_token(TokenType::RPAREN))
         return {};
-    
+
     return arguments;
 }
 
@@ -209,7 +209,7 @@ void Parser::expected_token_error(const TokenType& tp)
     string error = "Se esperaba que el siguente token fuera ";
     error.append(getNameForValue(tokens_enums_strings, tp));
     error.append(" pero se obtuvo ");
-    error.append(getNameForValue(tokens_enums_strings, peek_token.token_type) 
+    error.append(getNameForValue(tokens_enums_strings, peek_token.token_type)
             + " cerca de la línea " + to_string(current_token.line) + "\n");
     errors_list.push_back(error);
 }
@@ -220,6 +220,7 @@ PrefixParseFns Parser::register_prefix_fns()
         { TokenType::FUNCTION, parse_function },
         { TokenType::_FALSE, parse_boolean },
         { TokenType::_TRUE, parse_boolean },
+        { TokenType::_NULL, parse_null},
         { TokenType::IDENT, parse_identifier },
         { TokenType::IF, parse_if },
         { TokenType::INT, parse_integer },
@@ -233,7 +234,7 @@ PrefixParseFns Parser::register_prefix_fns()
 InfixParseFns Parser::register_infix_fns()
 {
     return {
-        
+
         { TokenType::PLUS, parse_infix_expression },
         { TokenType::MINUS, parse_infix_expression },
         { TokenType::DIVISION, parse_infix_expression },
