@@ -29,6 +29,7 @@ using ast::Function;
 using ast::Call;
 using ast::StringLiteral;
 using ast::Null;
+using ast::AssignStatement;
 
 using PrefixParseFn = std::function<Expression*()>;
 using InfixParseFn = std::function<Expression*(Expression*)>;
@@ -73,6 +74,7 @@ private:
     Statement* parse_statement();
     LetStatement* parse_let_statement();
     ReturnStatement* parse_return_statement();
+    AssignStatement* parse_assign_statement();
     ExpressionStatement* parse_expression_statements();
     Expression* parse_expression(Precedence);
     Block* parse_block();
@@ -95,7 +97,7 @@ private:
     PrefixParseFn parse_identifier = [&]() -> Expression*
     {
         try{
-            return new Identifier(Token(current_token), current_token.literal);
+            return new Identifier(current_token, current_token.literal);
         } catch(const std::bad_alloc& e)
         {
             errors_list.push_back("No se ha podido reservar espacio en memoria.");
@@ -227,6 +229,7 @@ private:
         call->arguments = parse_call_arguments();
         return call.release();
     };
+
 };
 
 #endif // PARSER_H

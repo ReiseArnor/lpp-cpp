@@ -28,14 +28,14 @@ void test_literal(Expression* expression, const char* expected_value)
 
 void test_literal(Expression* expression, const int expected_value)
 {
-    auto integer = static_cast<Integer*>(expression); 
-    CHECK(integer->value == expected_value); 
+    auto integer = static_cast<Integer*>(expression);
+    CHECK(integer->value == expected_value);
     CHECK(integer->token_literal() == to_string(expected_value));
 }
 
 void test_literal(Expression* expression, const bool expected_value)
 {
-    auto boolean = static_cast<Boolean*>(expression); 
+    auto boolean = static_cast<Boolean*>(expression);
     CHECK(boolean->value == expected_value);
     CHECK(boolean->token_literal() == (expected_value ? "verdadero" : "falso"));
 }
@@ -43,7 +43,7 @@ void test_literal(Expression* expression, const bool expected_value)
 template<typename T>
 void test_infix_expression(
     Expression* expression,
-    const T& expected_left, 
+    const T& expected_left,
     const string& expected_operator,
     const T& expected_right
     )
@@ -83,7 +83,7 @@ TEST_CASE("Let statements", "[parser]")
 
     REQUIRE(program.statements.size() == 4);
     auto expected_operators_and_values = vector<tuple<const char*,int>>{ {"x", 5}, {"y", 10}, {"foo", 20}, {"bar", true}};
-    
+
     for(size_t i = 0; i < 4; i++)
     {
         REQUIRE(program.statements.at(i)->token_literal() == "variable");
@@ -127,7 +127,7 @@ TEST_CASE("Return statement", "[parser]")
     Program program(parser.parse_program());
 
     REQUIRE(program.statements.size() == 4);
-    
+
     auto statements = vector<ReturnStatement*>();
     for(size_t i = 0; i < 4; i++)
     {
@@ -165,7 +165,7 @@ TEST_CASE("Integer expression", "[parser]")
     test_program_statements(parser, program);
 
     auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(0));
-    
+
     test_literal(expression_statement->expression, 5);
 }
 
@@ -177,10 +177,10 @@ TEST_CASE("Prefix expression", "[parser]")
     Program program(parser.parse_program());
 
     test_program_statements(parser, program, 3);
-    
+
     const array<const string, 3> op { "!", "-", "!" };
     const array<const string, 3> right_expression { "5", "15", "verdadero" };
-    
+
     for(size_t i = 0; i < 3; i++)
     {
         auto expression_statement = static_cast<ExpressionStatement*>(program.statements.at(i));
@@ -264,7 +264,7 @@ TEST_CASE("Boolean expression", "[parser]")
     test_program_statements(parser, program, 2);
 
     const array<bool, 2> expected_values { true, false };
-    
+
     for(size_t i = 0; i < 2; i++)
     {
         auto expression_statement =static_cast<ExpressionStatement*>(program.statements.at(i));
@@ -372,7 +372,7 @@ TEST_CASE("Funtion literal", "[parser]")
 
     REQUIRE(function_literal->body != nullptr);
     REQUIRE(function_literal->body->statements.size() == 1);
-    
+
     auto body = static_cast<ExpressionStatement*>(function_literal->body->statements.at(0));
     test_infix_expression(body->expression, "x", "+", "y");
 }
@@ -395,7 +395,7 @@ TEST_CASE("Function parameters", "[parser]")
 
         auto funcion = static_cast<Function*>(static_cast<ExpressionStatement*>(program.statements.at(0))->expression);
 
-        for (size_t i = 0; i < test["expected_params"].size(); i++) 
+        for (size_t i = 0; i < test["expected_params"].size(); i++)
         {
             test_literal(funcion->parameters.at(i), test["expected_params"].at(i));
         }
@@ -432,4 +432,25 @@ TEST_CASE("String literal expression")
     auto string_literal = static_cast<StringLiteral*>(expression_statement->expression);
 
     REQUIRE(string_literal->value == "hello world!");
+}
+
+TEST_CASE("Assign statements", "[parser]")
+{
+    string str = "x = 5; y = 10; foo = 20; bar = verdadero";
+    Lexer lexer(str);
+    Parser parser(lexer);
+    Program program(parser.parse_program());
+
+    REQUIRE(program.statements.size() == 4);
+    auto expected_operators_and_values = vector<tuple<const char*,int>>{ {"x", 5}, {"y", 10}, {"foo", 20}, {"bar", true}};
+
+    for(size_t i = 0; i < 4; i++)
+    {
+        auto assign_statement = static_cast<AssignStatement*>(program.statements.at(i));
+
+        test_literal(assign_statement->name, get<0>(expected_operators_and_values.at(i)));
+
+        i < 3 ? test_literal(assign_statement->value, get<1>(expected_operators_and_values.at(i))) // for the ints
+            :   test_literal(assign_statement->value, (bool)get<1>(expected_operators_and_values.at(i))); // for the bool
+    }
 }

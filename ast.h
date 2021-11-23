@@ -7,6 +7,7 @@
 
 namespace ast {
 enum class Node {
+    AssignStatement,
     Block,
     Boolean,
     Call,
@@ -393,6 +394,21 @@ public:
     std::string to_string() const override
     {
         return token_literal();
+    }
+};
+
+class AssignStatement : public Statement
+{
+public:
+    Identifier* name;
+    Expression* value;
+    AssignStatement(const Token& t, Identifier* i, Expression* e)
+        : Statement(t), name(i), value(e) {}
+    Node type() const override { return Node::AssignStatement; }
+
+    std::string to_string() const override
+    {
+        return name->to_string() + " = " + value->to_string();
     }
 };
 

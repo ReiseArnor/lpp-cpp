@@ -37,6 +37,8 @@ Statement* Parser::parse_statement()
     // the program receiving the pointer owns it
     if(current_token.token_type == TokenType::LET)
         return parse_let_statement();
+    if(current_token.token_type == TokenType::IDENT && peek_token.token_type == TokenType::ASSIGN)
+        return parse_assign_statement();
     if(current_token.token_type == TokenType::RETURN)
         return parse_return_statement();
     return parse_expression_statements();
@@ -245,6 +247,22 @@ InfixParseFns Parser::register_infix_fns()
         { TokenType::GT, parse_infix_expression },
         { TokenType::LPAREN, parse_call }
     };
+}
+
+AssignStatement* Parser::parse_assign_statement()
+{
+    auto name = static_cast<Identifier*>(parse_identifier());
+    if(!expected_token(TokenType::ASSIGN))
+        return nullptr;
+
+    auto token = current_token;
+    advance_tokens();
+
+    auto value = parse_expression(Precedence::LOWEST);
+    if(peek_token.token_type == TokenType::SEMICOLON)
+        advance_tokens();
+
+    return new AssignStatement(token, name, value);
 }
 
 Precedence Parser::current_precedence()

@@ -8,7 +8,6 @@
 #include <string>
 #include <tuple>
 #include <vector>
-#include <iostream>
 using namespace std;
 using obj::Object;
 using ast::Program;
@@ -94,12 +93,13 @@ TEST_CASE("Null value", "[evaluator]")
         "a",
         "b",
         "variable a = nulo; a",
-        "variable a = nulo; variable b = a; b"
+        "variable a = nulo; variable b = a; b",
+        "a = nulo; a",
+        "a = nulo; b = a; b"
     };
-    int c = 0;
+
     for(auto& s : tests)
     {
-        std::cout << c++;
         auto evaluated = evaluate_tests(s);
         test_object(evaluated);
     }
@@ -237,7 +237,17 @@ TEST_CASE("Assignment evaluation")
         {"variable a = 5; a;", 5},
         {"variable a = 5 * 5; a;", 25},
         {"variable a = 10; variable b = a; b;", 10},
-        {"variable a = 5; variable b = a; variable c = a + b + 5; c;", 15}
+        {"variable a = 5; variable b = a; variable c = a + b + 5; c;", 15},
+        {"variable a = si (1 > 0) { 1 } si_no { 0 }; a", 1},
+        {"variable a = procedimiento(){regresa 10;}(); a", 10},
+        {"a = si (1 > 0) { 1 } si_no { 0 }; a", 1},
+        {"a = procedimiento(){regresa 10;}(); a", 10},
+        {"a = 5; a;", 5},
+        {"a = 5 * 5; a;", 25},
+        {"a = 10; b = a; b;", 10},
+        {"a = 5; b = a; c = a + b + 5; c;", 15},
+        {"a = 10; variable b = a; b;", 10},
+        {"variable a = 5; b = a; variable c = a + b + 5; c;", 15},
     };
 
     auto env = new Environment();
@@ -309,8 +319,16 @@ TEST_CASE("String evaluation")
 {
     vector<tuple<string,string>> tests {
         {"\"Hello world!\"", "Hello world!"},
-        {"procedimiento(){ regresa \"Platzi es genial\"; }()",
-            "Platzi es genial"}
+        {"procedimiento(){ regresa \"Programar es divertido!\"; }()",
+            "Programar es divertido!"},
+        {"variable hello = \"Hi!\"; hello", "Hi!"},
+        {"variable condicion = si (10 > 5) { \"10 es mayor que 5\" }    \
+            si_no { \"5 es mayor que 10!?\" }; condicion",
+            "10 es mayor que 5"},
+        {"hello = \"Hi!\"; hello", "Hi!"},
+        {"condicion = si (10 > 5) { \"10 es mayor que 5\" }    \
+            si_no { \"5 es mayor que 10!?\" }; condicion",
+            "10 es mayor que 5"}
     };
 
     for(auto& t : tests)
@@ -330,7 +348,23 @@ TEST_CASE("String concatenation")
                 regresa \"Hola \" + nombre + \"!\";     \
             }                                           \
             saludo(\"David\")                           \
-        ", "Hola David!"}
+        ", "Hola David!"},
+        {"variable x = \"foo\" + \"bar\"; x", "foobar"},
+        {"variable x = \"foo\"; variable y = \"bar\"    \
+            variable a = x + y; a", "foobar"},
+        {"variable adios_str = procedimiento(){ regresa \"adios!\" };    \
+            variable bye = adios_str(); bye", "adios!"},
+        {"                                              \
+            saludo = procedimiento(nombre) {   \
+                regresa \"Hola \" + nombre + \"!\";     \
+            }                                           \
+            saludo(\"David\")                           \
+        ", "Hola David!"},
+        {"x = \"foo\" + \"bar\"; x", "foobar"},
+        {"x = \"foo\"; y = \"bar\"    \
+            a = x + y; a", "foobar"},
+        {"adios_str = procedimiento(){ regresa \"adios!\" };    \
+            bye = adios_str(); bye", "adios!"}
     };
 
     for(auto& t : tests)

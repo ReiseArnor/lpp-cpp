@@ -10,28 +10,29 @@
 #include "utils.h"
 #include "cleaner.h"
 
+using obj::Error;
+using obj::Environment;
 using obj::Object;
+using obj::ObjectType;
+
 using ast::ASTNode;
 using ast::Program;
 using ast::ExpressionStatement;
 using ast::Prefix;
 using ast::Infix;
-using obj::ObjectType;
 using ast::Block;
 using ast::If;
 using ast::ReturnStatement;
-using obj::Error;
-using obj::Environment;
 using ast::LetStatement;
 using ast::Identifier;
 using ast::Node;
+using ast::AssignStatement;
 
 static const char* WRONG_ARGS = "Cantidad errónea de argumentos para la función cerca de la línea %d, se esperaban %d pero se obtuvo %d";
 static const char* NOT_A_FUNCTION = "No es una function: %s cerca de la línea %d";
 static const char* TYPE_MISMATCH = "Discrepancia de tipos: %s %s %s cerca de la línea %d";
 static const char* UNKNOWN_PREFIX_OPERATION = "Operador desconocido: %s%s cerca de la línea %d";
 static const char* UNKNOWN_INFIX_OPERATION = "Operador desconocido: %s %s %s cerca de la línea %d";
-static const char* UNKNOWN_IDENTIFIER = "Identificador sin definir: \"%s\" cerca de la línea %d";
 
 const static auto TRUE = std::make_unique<obj::Boolean>(true);
 const static auto FALSE = std::make_unique<obj::Boolean>(false);
@@ -125,6 +126,14 @@ static Object* evaluate(ASTNode* node, Environment* env)
                 auto value = evaluate(cast_let_st->value, env);
                 assert(cast_let_st->name);
                 env->set_item(cast_let_st->name->value, value);
+                return value;
+            }
+
+        case Node::AssignStatement:
+            {
+                auto cast_assign = dynamic_cast<AssignStatement*>(node);
+                auto value = evaluate(cast_assign->value, env);
+                env->set_item(cast_assign->name->value, value);
                 return value;
             }
 
