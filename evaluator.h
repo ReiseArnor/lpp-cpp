@@ -40,6 +40,7 @@ const static auto _NULL = std::make_unique<obj::Null>();
 
 static Object* evaluate_program(Program*, Environment*);
 static Object* to_boolean_object(bool);
+static Object* to_boolean_object(const std::string&, Object*, Object*);
 static Object* evaluate_prefix_expression(const std::string&, Object*, const int);
 static Object* evaluate_infix_expression(const std::string&, Object*, Object*, const int);
 static Object* evaluate_if_expression(If*, Environment*);
@@ -434,16 +435,8 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
         return evaluate_integer_infix_expression(operatr, left, right, line);
     else if(left->type() == ObjectType::STRING && right->type() == ObjectType::STRING)
         return evaluate_string_infix_expression(operatr, left, right, line);
-    else if(operatr == "==")
-        return to_boolean_object(
-                dynamic_cast<obj::Boolean*>(left)->value ==
-                dynamic_cast<obj::Boolean*>(right)->value
-                );
-    else if(operatr == "!=")
-        return to_boolean_object(
-                dynamic_cast<obj::Boolean*>(left)->value !=
-                dynamic_cast<obj::Boolean*>(right)->value
-                );
+    else if(operatr == "==" || operatr == "!=")
+        return to_boolean_object(operatr, left, right);
     else if(left->type() != right->type())
     {
         auto error = new Error{ format(
@@ -494,4 +487,57 @@ std::vector<Object*> evaluate_expression(const std::vector<Expression*>& express
 Object* to_boolean_object(bool value)
 {
     return value ? TRUE.get() : FALSE.get();
+}
+
+Object* to_boolean_object(const std::string& operatr, Object* left, Object* right)
+{
+    switch (left->type()) {
+        case ObjectType::BOOLEAN:
+            {
+                if(right->type() == ObjectType::BOOLEAN && operatr == "==") {
+                    auto value = static_cast<obj::Boolean*>(left)->value
+                        == static_cast<obj::Boolean*>(right)->value;
+                    return value ? TRUE.get() : FALSE.get();
+                }
+                if(right->type() == ObjectType::BOOLEAN && operatr == "!=") {
+                    auto value = static_cast<obj::Boolean*>(left)->value
+                        != static_cast<obj::Boolean*>(right)->value;
+                    return value ? TRUE.get() : FALSE.get();
+                }
+                if(operatr == "!=")
+                    return TRUE.get();
+
+                return FALSE.get();
+            }
+
+        case ObjectType::INTEGER:
+            {
+                if(operatr == "!=")
+                    return TRUE.get();
+
+                return FALSE.get();
+            }
+
+        case ObjectType::STRING:
+            {
+                if(operatr == "!=")
+                    return TRUE.get();
+
+                return FALSE.get();
+
+            }
+
+        case ObjectType::_NULL:
+            {
+                if(right->type() == ObjectType::_NULL && operatr == "==")
+                    return TRUE.get();
+                if(operatr == "!=" && right->type() != ObjectType::_NULL)
+                    return TRUE.get();
+
+                return FALSE.get();
+            }
+
+        default:
+            return FALSE.get();
+    }
 }

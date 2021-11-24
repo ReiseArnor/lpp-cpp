@@ -110,6 +110,7 @@ TEST_CASE("Boolean evaluation", "[evaluator]")
     vector<tuple<string, bool>> tests {
         {"verdadero", true},
         {"falso", false},
+        {"nulo", false},
         {"1 < 2", true},
         {"1 > 2", false},
         {"1 < 1", false},
@@ -124,7 +125,17 @@ TEST_CASE("Boolean evaluation", "[evaluator]")
         {"(1 < 2) == verdadero", true},
         {"(1 < 2) == falso", false},
         {"(1 > 2) == verdadero", false},
-        {"(1 > 2) == falso", true}
+        {"(1 > 2) == falso", true},
+        {"nulo == nulo", true},
+        {"nulo == 1", false},
+        {"nulo == \"hello\"", false},
+        {"nulo == verdadero", false},
+        {"nulo == falso", false},
+        {"nulo != nulo", false},
+        {"nulo != 1", true},
+        {"nulo != \"hello\"", true},
+        {"nulo != verdadero", true},
+        {"nulo != falso", true}
     };
 
     eval_and_test_objects(tests);
@@ -138,7 +149,11 @@ TEST_CASE("Bang operator", "[evaluator]")
         {"!!verdadero", true},
         {"!!falso", false},
         {"!5", false},
-        {"!!5", true}
+        {"!!5", true},
+        {"!\"hi\"", false},
+        {"!!\"hi\"", true},
+        {"!nulo", true},
+        {"!!nulo", false}
     };
 
     eval_and_test_objects(tests);
@@ -151,7 +166,9 @@ TEST_CASE("If else evaluation")
     vector<tuple<string, int*>> tests {
         {"si (verdadero) { 10 }", &dies},
         {"si (falso) { 10 }", nullptr},
+        {"si (nulo) { 10 }", nullptr},
         {"si (1) { 10 }", &dies},
+        {"si (\"1\") { 10 }", &dies},
         {"si (1 < 2) { 10 }", &dies},
         {"si (1 > 2) { 10 }", nullptr},
         {"si (1 < 2) { 10 } si_no { 20 }", &dies},
