@@ -60,6 +60,7 @@ void eval_and_test_objects(const vector<tuple<string, T>>& tests)
 {
     for(auto& t : tests)
     {
+        INFO(get<0>(t));
         auto evaluated = evaluate_tests(get<0>(t));
         test_object(evaluated, get<1>(t));
     }
