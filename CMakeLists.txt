@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 if(MSVC)
-  set(CPP_FLAGS /W4)
+  set(CPP_FLAGS /W4 /permissive-)
 else()
-  set(CPP_FLAGS -Wall -Wextra -Wconversion)
+    set(CPP_FLAGS -Wall -Wextra -Wconversion -Wpedantic)
 endif()
 
 add_executable(${PROJECT_NAME} main.cpp repl.cpp parser.cpp lexer.cpp)
