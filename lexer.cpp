@@ -1,8 +1,11 @@
 #include "lexer.h"
 #include "token.h"
+#include "utils.h"
+#include <array>
 #include <iostream>
 #include <string>
-#include <map>
+#include <string_view>
+#include <utility>
 using namespace std;
 
 bool is_indentation(char);
@@ -187,21 +190,22 @@ Token Lexer::read_string(char quote)
     return Token { TokenType::STRING, begin, end, line};
 }
 
+static constexpr array<pair<string_view, TokenType>, 8> keyword_values {{
+    {"variable", TokenType::LET},
+    {"procedimiento", TokenType::FUNCTION},
+    {"regresa", TokenType::RETURN},
+    {"si", TokenType::IF},
+    {"si_no", TokenType::ELSE},
+    {"verdadero", TokenType::_TRUE},
+    {"falso", TokenType::_FALSE},
+}};
+
 Token Lexer::keyword(const string& s) const
 {
-    static map<string, TokenType> keywords = {
-        {"variable", TokenType::LET},
-        {"procedimiento", TokenType::FUNCTION},
-        {"regresa", TokenType::RETURN},
-        {"si", TokenType::IF},
-        {"si_no", TokenType::ELSE},
-        {"verdadero", TokenType::_TRUE},
-        {"falso", TokenType::_FALSE},
-        {"nulo", TokenType::_NULL}
-    };
+    static constexpr auto keywords = Map<string_view, TokenType, keyword_values.size()>{{keyword_values}};
 
-    if(keywords.find(s) != keywords.end())
-        return Token(keywords[s], s, line);
+    if(keywords.find(s))
+        return Token(keywords.at(s), s, line);
 
     return Token(TokenType::IDENT, s, line);
 }
