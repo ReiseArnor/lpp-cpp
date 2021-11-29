@@ -4,6 +4,9 @@ project(lpp_interpreter)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+include(${CMAKE_SOURCE_DIR}/build/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
+
 if(MSVC)
   set(CPP_FLAGS /W4 /permissive-)
 else()
@@ -11,6 +14,7 @@ else()
 endif()
 
 add_executable(${PROJECT_NAME} main.cpp repl.cpp parser.cpp lexer.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE CONAN_PKG::fmt)
 target_compile_options(${PROJECT_NAME} PRIVATE ${CPP_FLAGS})
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
