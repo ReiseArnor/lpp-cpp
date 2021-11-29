@@ -37,7 +37,7 @@ jobs:
     - name: Installing dependencies
       run: |
         mkdir build && cd build
-        conan install .. --build=missing -s compiler.libcxx=libstdc++11
+        conan install .. --build=missing -s compiler.libcxx=libc++
 
     - name: Create Build Environment and Generate files
       run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
@@ -62,7 +62,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        conan install .. --build=missing -s compiler.libcxx=libstdc++11
+        conan install .. --build=missing
 
     - name: Create Build Environment and Generete files
       run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
