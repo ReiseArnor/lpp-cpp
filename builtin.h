@@ -5,24 +5,28 @@
 #include "cleaner.h"
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
+#include <fmt/core.h>
+
 using obj::Builtin;
 using obj::BuiltinFunction;
 using obj::Object;
 using obj::Error;
 
-static const char* UNSUPPORTED_ARGUMENT_TYPE = "Argumento para longitud sin soporte, se recibió %s cerca de la línea %d";
-static const char* WRONG_ARGS_BUILTIN_FN = "Número incorrecto de argumentos para %s, se recibieron %d, se esperaba 1, cerca de la línea %d";
+static constexpr std::string_view UNSUPPORTED_ARGUMENT_TYPE = "Argumento para longitud sin soporte, se recibió {} cerca de la línea {}";
+static constexpr std::string_view WRONG_ARGS_BUILTIN_FN = "Número incorrecto de argumentos para {}, se recibieron {}, se esperaba 1, cerca de la línea {}";
 
-static BuiltinFunction longitud = [](const std::vector<Object*>& args, const int line) -> Object* 
+static BuiltinFunction longitud = [](const std::vector<Object*>& args, const int line) -> Object*
 {
     if(args.size() != 1)
     {
-        auto error = new Error{ format(
-                    WRONG_ARGS_BUILTIN_FN,
-                    "longitud",
-                    args.size(),
-                    line) };
+        auto error = new Error{
+            fmt::format(WRONG_ARGS_BUILTIN_FN,
+                        "longitud",
+                        args.size(),
+                        line
+        )};
         eval_errors.push_back(error);
         return error;
     }
@@ -41,11 +45,12 @@ static BuiltinFunction longitud = [](const std::vector<Object*>& args, const int
         cleaner.push_back(integer);
         return integer;
     }
-    
-    auto error = new Error{ format(
-                UNSUPPORTED_ARGUMENT_TYPE,
-                args.at(0)->type_string().c_str(),
-                line) };
+
+    auto error = new Error{
+        fmt::format(UNSUPPORTED_ARGUMENT_TYPE,
+                    args.at(0)->type_string(),
+                    line
+    )};
     eval_errors.push_back(error);
     return error;
 };

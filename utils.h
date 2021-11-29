@@ -2,8 +2,9 @@
 #define UTILS_H
 #include <string>
 #include <algorithm>
-#include <vector>
 #include <cstdarg>
+#include <array>
+#include <string_view>
 
 template<class T>
 struct NameValuePair {
@@ -13,24 +14,33 @@ struct NameValuePair {
 };
 
 template<class Mapping, class V>
-static std::string getNameForValue(Mapping a, V value) {
+static std::string_view getNameForValue(Mapping a, V value) {
     auto pos = std::find_if(std::begin(a), std::end(a), [&value](const typename Mapping::value_type& t){
         return (t.value == value);
     });
     return pos->name;
 }
 
-[[maybe_unused]] static std::string format(const char* str, ...)
-{
-    va_list args;
-    va_start (args, str);
-    size_t len = static_cast<size_t>(std::vsnprintf(NULL, 0, str, args));
-    va_end (args);
-    std::vector<char> vec(len + 1);
-    va_start (args, str);
-    std::vsnprintf(&vec[0], len + 1, str, args);
-    va_end (args);
-    return &vec[0];
-}
+template <typename Key, typename Value, std::size_t Size>
+struct Map {
+    std::array<std::pair<Key, Value>, Size> data;
 
+    [[nodiscard]] constexpr Value at(const Key &key) const {
+        const auto itr =
+        std::find_if(begin(data), end(data),
+                     [&key](const auto &v) { return v.first == key; });
+        return itr->second;
+    };
+
+    [[nodiscard]] constexpr bool find(const Key &key) const {
+        const auto itr =
+            std::find_if(begin(data), end(data),
+                [&key](const auto &v) { return v.first == key; });
+        if (itr != end(data)) {
+            return true;
+        }
+
+        return false;
+  };
+};
 #endif // UTILS_H

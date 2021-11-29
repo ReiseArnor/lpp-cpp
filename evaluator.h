@@ -5,10 +5,12 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <typeinfo>
 #include <vector>
 #include "utils.h"
 #include "cleaner.h"
+#include <fmt/core.h>
 
 using obj::Error;
 using obj::Environment;
@@ -28,11 +30,11 @@ using ast::Identifier;
 using ast::Node;
 using ast::AssignStatement;
 
-static const char* WRONG_ARGS = "Cantidad errónea de argumentos para la función cerca de la línea %d, se esperaban %d pero se obtuvo %d";
-static const char* NOT_A_FUNCTION = "No es una function: %s cerca de la línea %d";
-static const char* TYPE_MISMATCH = "Discrepancia de tipos: %s %s %s cerca de la línea %d";
-static const char* UNKNOWN_PREFIX_OPERATION = "Operador desconocido: %s%s cerca de la línea %d";
-static const char* UNKNOWN_INFIX_OPERATION = "Operador desconocido: %s %s %s cerca de la línea %d";
+static constexpr std::string_view WRONG_ARGS = "Cantidad errónea de argumentos para la función cerca de la línea {}, se esperaban {} pero se obtuvo {}";
+static constexpr std::string_view NOT_A_FUNCTION = "No es una function: {} cerca de la línea {}";
+static constexpr std::string_view TYPE_MISMATCH = "Discrepancia de tipos: {} {} {} cerca de la línea {}";
+static constexpr std::string_view UNKNOWN_PREFIX_OPERATION = "Operador desconocido: {}{} cerca de la línea {}";
+static constexpr std::string_view UNKNOWN_INFIX_OPERATION = "Operador desconocido: {} {} {} cerca de la línea {}";
 
 const static auto TRUE = std::make_unique<obj::Boolean>(true);
 const static auto FALSE = std::make_unique<obj::Boolean>(false);
@@ -182,12 +184,12 @@ static Environment* extend_function_environment(obj::Function* fn, const std::ve
 {
     if(fn->parameters.size() != args.size())
     {
-        auto error = new Error{ format(
-                    WRONG_ARGS,
-                    line,
-                    fn->parameters.size(),
-                    args.size()
-                    ) };
+        auto error = new Error{
+            fmt::format(WRONG_ARGS,
+                        line,
+                        fn->parameters.size(),
+                        args.size()
+        )};
         eval_errors.push_back(error);
         return nullptr;
     }
@@ -226,11 +228,11 @@ Object* apply_function(Object* fn, const std::vector<Object*>& args, const int l
         return function->fn(args, line);
     }
 
-    auto error = new Error{ format(
-                    NOT_A_FUNCTION,
-                    fn->type_string().c_str(),
+    auto error = new Error{
+        fmt::format(NOT_A_FUNCTION,
+                    fn->type_string(),
                     line
-                    ) };
+    )};
     eval_errors.push_back(error);
     return error;
 }
@@ -314,12 +316,12 @@ static Object* evaluate_minus_operator_expression(Object* right, const int line)
 {
     if(typeid(*right).name() != typeid(obj::Integer).name())
     {
-        auto error = new Error{ format(
-                    UNKNOWN_PREFIX_OPERATION,
-                    "-",
-                    right->type_string().c_str(),
-                    line
-                    ) };
+        auto error = new Error{
+            fmt::format(UNKNOWN_PREFIX_OPERATION,
+                        "-",
+                        right->type_string(),
+                        line
+        )};
         eval_errors.push_back(error);
         return error;
     }
@@ -338,12 +340,12 @@ Object* evaluate_prefix_expression(const std::string& operatr, Object* right, co
         return evaluate_minus_operator_expression(right, line);
     else
     {
-        auto error = new Error{ format(
-                    UNKNOWN_PREFIX_OPERATION,
-                    operatr.c_str(),
-                    right->type_string().c_str(),
-                    line
-                    ) };
+        auto error = new Error{
+            fmt::format(UNKNOWN_PREFIX_OPERATION,
+                        operatr,
+                        right->type_string(),
+                        line
+        )};
         eval_errors.push_back(error);
         return error;
     }
@@ -389,13 +391,13 @@ static Object* evaluate_integer_infix_expression(const std::string& operatr, Obj
         return to_boolean_object(left_value != right_value);
     else
     {
-        auto error = new Error{ format(
-                    UNKNOWN_INFIX_OPERATION,
-                    left->type_string().c_str(),
-                    operatr.c_str(),
-                    right->type_string().c_str(),
-                    line
-                    ) };
+        auto error = new Error{
+            fmt::format(UNKNOWN_INFIX_OPERATION,
+                        left->type_string(),
+                        operatr,
+                        right->type_string(),
+                        line
+        )};
         eval_errors.push_back(error);
         return error;
     }
@@ -418,13 +420,13 @@ static Object* evaluate_string_infix_expression(const std::string& operatr, Obje
     else if(operatr == "!=")
         return to_boolean_object(left_value != right_value);
 
-    auto error = new Error{ format(
-                UNKNOWN_INFIX_OPERATION,
-                left->type_string().c_str(),
-                operatr.c_str(),
-                right->type_string().c_str(),
-                line
-                ) };
+    auto error = new Error{
+        fmt::format(UNKNOWN_INFIX_OPERATION,
+                    left->type_string(),
+                    operatr,
+                    right->type_string(),
+                    line
+    )};
     eval_errors.push_back(error);
     return error;
 }
@@ -439,25 +441,25 @@ Object* evaluate_infix_expression(const std::string& operatr, Object* left, Obje
         return to_boolean_object(operatr, left, right);
     else if(left->type() != right->type())
     {
-        auto error = new Error{ format(
-                    TYPE_MISMATCH,
-                    left->type_string().c_str(),
-                    operatr.c_str(),
-                    right->type_string().c_str(),
-                    line
-                    ) };
+        auto error = new Error{
+            fmt::format(TYPE_MISMATCH,
+                        left->type_string(),
+                        operatr,
+                        right->type_string(),
+                        line
+        )};
         eval_errors.push_back(error);
         return error;
     }
 
 
-    auto error = new Error{ format(
-                UNKNOWN_INFIX_OPERATION,
-                left->type_string().c_str(),
-                operatr.c_str(),
-                right->type_string().c_str(),
-                line
-                ) };
+    auto error = new Error{
+        fmt::format(UNKNOWN_INFIX_OPERATION,
+                    left->type_string(),
+                    operatr,
+                    right->type_string(),
+                    line
+    )};
     eval_errors.push_back(error);
     return error;
 }
