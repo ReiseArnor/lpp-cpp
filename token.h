@@ -4,6 +4,7 @@
 #include <ostream>
 #include <string>
 #include <array>
+#include <fmt/core.h>
 #include "utils.h"
 
 enum class TokenType
@@ -39,7 +40,7 @@ enum class TokenType
     STRING
 };
 
-const std::array<const NameValuePair<TokenType>, 29> tokens_enums_strings {{
+static constexpr std::array<NameValuePair<TokenType>, 29> tokens_enums_strings {{
     {TokenType::ASSIGN, "ASSIGN"},
     {TokenType::COMMA, "COMMA\t"},
     {TokenType::_EOF, "EOF\t"},
@@ -99,7 +100,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const Token& t)
     {
-        out << "Type: " << getNameForValue(tokens_enums_strings, t.token_type) << "\tLiteral: " << t.literal << "\n";
+        out << fmt::format("Type: {} \tLiteral: {}\n", getNameForValue(tokens_enums_strings, t.token_type), t.literal);
         return out;
     }
 };
