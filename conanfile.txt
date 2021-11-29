@@ -4,3 +4,7 @@
 
  [generators]
  cmake
+
+ [imports]
+ bin, *.dll -> ./build/Debug/bin
+ lib, *.dylib* -> ./build/Debug/bin
