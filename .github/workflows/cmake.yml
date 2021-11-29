@@ -8,26 +8,40 @@ jobs:
     name: Linux
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - run: pip install conan
+
+    - name: Installing dependencies
+      run: |
+        mkdir build && cd build
+        conan install .. --build=missing -s compiler.libcxx=libstdc++11
 
     - name: Create Build Environment and Generate files
       run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
-      
+
     - name: Building
       run: cmake --build build/Debug
-      
+
     - name: Test
       working-directory: ./build/Debug
       run: ctest -VV
-      
+
   build_osx:
     runs-on: macos-latest
     name: MacOS
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - run: pip install conan
+
+    - name: Installing dependencies
+      run: |
+        mkdir build && cd build
+        conan install .. --build=missing -s compiler.libcxx=libstdc++11
 
     - name: Create Build Environment and Generate files
       run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
-      
+
     - name: Building
       run: cmake --build build/Debug
 
@@ -41,12 +55,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - run: pip install conan
+
+    - name: Installing dependencies
+      run: |
+        mkdir build
+        cd build
+        conan install .. --build=missing -s compiler.libcxx=libstdc++11
 
     - name: Create Build Environment and Generete files
       run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug
-    
+
     - name: Building
-      run: cmake --build build/Debug 
+      run: cmake --build build/Debug
 
     - name: Test
       working-directory: .\build\Debug
