@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <fmt/core.h>
+
 using namespace std;
 using obj::Environment;
 using ast::Programs_Guard;
@@ -22,7 +24,7 @@ void start_repl()
 {
     auto env = make_unique<Environment>();
     Programs_Guard guard;
-    for (string s = ""; s != "salir()"; getline(cin, s)) 
+    for (string s = ""; s != "salir()"; getline(cin, s))
     {
         Lexer lexer(s);
         Parser parser(lexer);
@@ -30,14 +32,14 @@ void start_repl()
         if(parser.errors().size() > 0)
         {
             print_parser_errors(parser.errors());
-            cout << "\n>> ";
+            fmt::print("\n>> ");
             continue;
         }
 
         auto evaluated = evaluate(program, env.get());
 
         if(evaluated != nullptr)
-            cout << evaluated->inspect();
-        cout << "\n>> ";
+            fmt::print("{}", evaluated->inspect());
+        fmt::print("\n>> ");
     }
 }
