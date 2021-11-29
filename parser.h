@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <fmt/core.h>
 
 using ast::Expression;
 using ast::Statement;
@@ -48,8 +49,8 @@ enum class Precedence
     CALL
 };
 
-static const std::map<const TokenType, const Precedence> PRECEDENCES
-{
+static constexpr std::array<std::pair<TokenType, Precedence>, 9> precedence_values
+{{
     { TokenType::EQ, Precedence::EQUALS },
     { TokenType::NOT_EQ, Precedence::EQUALS },
     { TokenType::LT, Precedence::LESSGREATER },
@@ -59,7 +60,7 @@ static const std::map<const TokenType, const Precedence> PRECEDENCES
     { TokenType::DIVISION, Precedence::PRODUC },
     { TokenType::MULTIPLICATION, Precedence::PRODUC },
     { TokenType::LPAREN, Precedence::CALL }
-};
+ }};
 
 class Parser
 {
@@ -85,8 +86,7 @@ private:
     void expected_token_error(const TokenType&);
     InfixParseFns register_infix_fns();
     PrefixParseFns register_prefix_fns();
-    Precedence current_precedence();
-    Precedence peek_precedence();
+    Precedence get_precedence(const TokenType&);
 
 public:
     explicit Parser(const Lexer& l);
@@ -96,28 +96,12 @@ public:
 private:
     PrefixParseFn parse_identifier = [&]() -> Expression*
     {
-        try{
-            return new Identifier(current_token, current_token.literal);
-        } catch(const std::bad_alloc& e)
-        {
-            errors_list.push_back("No se ha podido reservar espacio en memoria.");
-            return nullptr;
-        }
+        return new Identifier(current_token, current_token.literal);
     };
 
     PrefixParseFn parse_integer = [&]() -> Expression*
     {
-        try{
-            return new Integer(current_token, static_cast<std::size_t>(std::stoi(current_token.literal)));
-        } catch(const std::invalid_argument& e) {
-            std::string error = "No se ha podido parsear ";
-            error.append(current_token.literal + " como entero.");
-            errors_list.push_back(error);
-            return nullptr;
-        } catch(const std::bad_alloc& e) {
-            errors_list.push_back("No se ha podido reservar espacio en memoria.");
-            return nullptr;
-        }
+        return new Integer(current_token, static_cast<std::size_t>(std::stoi(current_token.literal)));
     };
 
     PrefixParseFn parse_prefix_expression = [&]() -> Expression*
@@ -132,24 +116,12 @@ private:
 
     PrefixParseFn parse_boolean = [&]() -> Expression*
     {
-        try{
-            return new Boolean(current_token, current_token.token_type == TokenType::_TRUE);
-        } catch(const std::bad_alloc& e)
-        {
-            errors_list.push_back("No se ha podido reservar espacio en memoria.");
-            return nullptr;
-        }
+        return new Boolean(current_token, current_token.token_type == TokenType::_TRUE);
     };
 
     PrefixParseFn parse_null = [&]() -> Expression*
     {
-        try{
-            return new Null(current_token);
-        } catch(const std::bad_alloc& e)
-        {
-            errors_list.push_back("No se ha podido reservar espacio en memoria.");
-            return nullptr;
-        }
+        return new Null(current_token);
     };
 
     PrefixParseFn parse_grouped_expression = [&]() -> Expression*
@@ -216,7 +188,7 @@ private:
     {
         auto infix = std::make_unique<Infix>(current_token, left, current_token.literal);
 
-        auto precedence = current_precedence();
+        auto precedence = get_precedence(current_token.token_type);
         advance_tokens();
         infix->right = parse_expression(precedence);
 

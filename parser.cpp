@@ -2,12 +2,13 @@
 #include "ast.h"
 #include "lexer.h"
 #include "token.h"
-#include <iostream>
-#include <map>
+#include "utils.h"
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <fmt/core.h>
+
 using namespace std;
 using namespace ast;
 
@@ -96,7 +97,7 @@ Expression* Parser::parse_expression(Precedence precedence)
         auto prefix_parse_fn = prefix_parse_fns[current_token.token_type];
         auto left_expression = prefix_parse_fn();
 
-        while (peek_token.token_type != TokenType::SEMICOLON && precedence < peek_precedence())
+        while (peek_token.token_type != TokenType::SEMICOLON && precedence < get_precedence(peek_token.token_type))
         {
             auto infix_parse_fn = infix_parse_fns[peek_token.token_type];
             advance_tokens();
@@ -107,8 +108,7 @@ Expression* Parser::parse_expression(Precedence precedence)
     }
     catch(...)
     {
-        string error = "No se encontró ninguna función para parsear ";
-        error.append(current_token.literal + " cerca de la línea " + to_string(current_token.line) + "\n");
+        auto error = fmt::format("No se encontró ninguna función para parsear {} cerca de la línea {}\n", current_token.literal, current_token.line);
         errors_list.push_back(error);
         return nullptr;
     }
@@ -208,11 +208,10 @@ vector<string>& Parser::errors()
 
 void Parser::expected_token_error(const TokenType& tp)
 {
-    string error = "Se esperaba que el siguente token fuera ";
-    error.append(getNameForValue(tokens_enums_strings, tp));
-    error.append(" pero se obtuvo ");
-    error.append(getNameForValue(tokens_enums_strings, peek_token.token_type)
-            + " cerca de la línea " + to_string(current_token.line) + "\n");
+    auto error = fmt::format("Se esperaba que el siguente token fuera {} pero se obtuvo {} cerca de la línea {}",
+            getNameForValue(tokens_enums_strings, tp),
+            getNameForValue(tokens_enums_strings, peek_token.token_type),
+            current_token.line);
     errors_list.push_back(error);
 }
 
@@ -265,20 +264,12 @@ AssignStatement* Parser::parse_assign_statement()
     return new AssignStatement(token, name, value);
 }
 
-Precedence Parser::current_precedence()
+Precedence Parser::get_precedence(const TokenType& tp)
 {
-    try{
-    return PRECEDENCES.at(current_token.token_type);
-    } catch(const out_of_range& e) {
-        return Precedence::LOWEST;
-    }
-}
+    static constexpr auto PRECEDENCES = Map<TokenType, Precedence, precedence_values.size()>{{precedence_values}};
 
-Precedence Parser::peek_precedence()
-{
-    try{
-    return PRECEDENCES.at(peek_token.token_type);
-    } catch(const out_of_range& e) {
-        return Precedence::LOWEST;
-    }
+    if(PRECEDENCES.find(tp))
+        return PRECEDENCES.at(tp);
+
+    return Precedence::LOWEST;
 }
