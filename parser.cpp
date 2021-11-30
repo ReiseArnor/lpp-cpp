@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 using namespace std;
 using namespace ast;

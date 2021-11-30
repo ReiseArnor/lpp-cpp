@@ -62,7 +62,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        conan install .. --build
+        conan install .. --build -s build_type=Debug
 
     - name: Create Build Environment and Generete files
       run: cmake -S . -B build/Debug -DCMAKE_BUILD_TYPE=Debug

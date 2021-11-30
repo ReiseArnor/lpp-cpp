@@ -4,7 +4,7 @@
 #include <ostream>
 #include <string>
 #include <array>
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include "utils.h"
 
 enum class TokenType

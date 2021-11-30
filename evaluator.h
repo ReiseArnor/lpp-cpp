@@ -10,7 +10,7 @@
 #include <vector>
 #include "utils.h"
 #include "cleaner.h"
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 using obj::Error;
 using obj::Environment;

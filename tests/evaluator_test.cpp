@@ -111,7 +111,6 @@ TEST_CASE("Boolean evaluation", "[evaluator]")
     vector<tuple<string, bool>> tests {
         {"verdadero", true},
         {"falso", false},
-        {"nulo", false},
         {"1 < 2", true},
         {"1 > 2", false},
         {"1 < 1", false},

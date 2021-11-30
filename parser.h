@@ -12,7 +12,7 @@
 #include <string>
 #include <map>
 #include <memory>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 using ast::Expression;
 using ast::Statement;

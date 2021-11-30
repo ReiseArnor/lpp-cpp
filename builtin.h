@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 using obj::Builtin;
 using obj::BuiltinFunction;
