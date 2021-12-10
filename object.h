@@ -46,6 +46,11 @@ public:
     virtual std::string inspect() const = 0;
     virtual std::string_view type_string() const = 0;
     virtual ~Object(){}
+    Object() = default;
+    Object (const Object&) = delete;
+    Object& operator=(const Object&) = delete;
+    Object (Object&&) = delete;
+    Object& operator=(Object&&) = delete;
 };
 
 class Integer : public Object
@@ -160,6 +165,7 @@ public:
     ObjectType type() const override { return ObjectType::BUILTIN; }
     std::string inspect() const override { return "builtin function"; }
     std::string_view type_string() const override { return getNameForValue(objects_enums_string, ObjectType::BUILTIN); }
+    Builtin(const Builtin& cp) : fn(cp.fn) {}
 };
 
 } // namespace obj

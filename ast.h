@@ -34,6 +34,11 @@ public:
     virtual std::string to_string() const = 0;
     virtual Node type() const = 0;
     virtual ~ASTNode(){}
+    ASTNode() = default;
+    ASTNode (const ASTNode&) = delete;
+    ASTNode& operator=(const ASTNode&) = delete;
+    ASTNode (ASTNode&&) = delete;
+    ASTNode& operator=(ASTNode&&) = delete;
 };
 
 class Statement : public ASTNode
