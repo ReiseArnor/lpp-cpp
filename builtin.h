@@ -17,7 +17,7 @@ using obj::Error;
 static constexpr std::string_view UNSUPPORTED_ARGUMENT_TYPE = "Argumento para longitud sin soporte, se recibió {} cerca de la línea {}";
 static constexpr std::string_view WRONG_ARGS_BUILTIN_FN = "Número incorrecto de argumentos para {}, se recibieron {}, se esperaba 1, cerca de la línea {}";
 
-static BuiltinFunction longitud = [](const std::vector<Object*>& args, const int line) -> Object*
+static const BuiltinFunction longitud = [](const std::vector<Object*>& args, const int line) -> Object*
 {
     if(args.size() != 1)
     {
@@ -55,7 +55,7 @@ static BuiltinFunction longitud = [](const std::vector<Object*>& args, const int
     return error;
 };
 
-static std::map<std::string, Builtin> BUILTINS {
+static std::map<std::string_view, Builtin> BUILTINS {
     {"longitud", Builtin(longitud)}
 };
 
