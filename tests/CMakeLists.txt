@@ -27,6 +27,11 @@ target_link_libraries(parser_tests PRIVATE CONAN_PKG::catch2 CONAN_PKG::fmt)
 target_link_libraries(ast_tests PRIVATE CONAN_PKG::catch2 CONAN_PKG::fmt)
 target_link_libraries(eval_tests PRIVATE CONAN_PKG::catch2 CONAN_PKG::fmt)
 
+target_precompile_headers(lexer_tests REUSE_FROM ${PROJECT_NAME})
+target_precompile_headers(parser_tests REUSE_FROM ${PROJECT_NAME})
+target_precompile_headers(ast_tests REUSE_FROM ${PROJECT_NAME})
+target_precompile_headers(eval_tests REUSE_FROM ${PROJECT_NAME})
+
 add_test(lexer ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lexer_tests)
 add_test(parser ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/parser_tests)
 add_test(ast ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ast_tests)
