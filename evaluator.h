@@ -1,3 +1,5 @@
+#ifndef EVALUATOR_H
+#define EVALUATOR_H
 #include "ast.h"
 #include "object.h"
 #include "builtin.h"
@@ -543,3 +545,5 @@ Object* to_boolean_object(const std::string& operatr, Object* left, Object* righ
             return FALSE.get();
     }
 }
+
+#endif // EVALUATOR_H
