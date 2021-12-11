@@ -3,6 +3,7 @@
 #include "object.h"
 #include "utils.h"
 #include "cleaner.h"
+#include <cstdlib>
 #include <map>
 #include <string>
 #include <string_view>
@@ -55,8 +56,14 @@ static const BuiltinFunction longitud = [](const std::vector<Object*>& args, con
     return error;
 };
 
+static const BuiltinFunction salir = [](const std::vector<Object*>&, const int) -> Object*
+{
+    exit(EXIT_SUCCESS);
+};
+
 static std::map<std::string_view, Builtin> BUILTINS {
-    {"longitud", Builtin(longitud)}
+    {"longitud", Builtin(longitud)},
+    {"salir", Builtin(salir)},
 };
 
 #endif // BUILTIN_H
