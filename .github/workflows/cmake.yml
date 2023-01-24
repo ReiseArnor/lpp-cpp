@@ -26,6 +26,12 @@ jobs:
       working-directory: ./build/Debug
       run: ctest -VV
 
+    - name: Codecov
+      run: |
+        curl -Os https://uploader.codecov.io/latest/linux/codecov
+        chmod +x codecov
+        ./codecov
+
   build_osx:
     runs-on: macos-latest
     name: MacOS
@@ -48,6 +54,12 @@ jobs:
     - name: Test
       working-directory: ./build/Debug
       run: ctest -VV
+
+    - name: Codecov
+      run: |
+        curl -Os https://uploader.codecov.io/latest/macos/codecov
+        chmod +x codecov
+        ./codecov
 
   build_windows:
     runs-on: windows-latest
@@ -73,3 +85,9 @@ jobs:
     - name: Test
       working-directory: .\build\Debug
       run: ctest -VV
+
+    - name: Codecov
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
+        .\codecov.exe
