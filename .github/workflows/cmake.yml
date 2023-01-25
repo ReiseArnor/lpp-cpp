@@ -30,7 +30,7 @@ jobs:
       run: |
         curl -Os https://uploader.codecov.io/latest/linux/codecov
         chmod +x codecov
-        ./codecov
+        ./codecov -t ${CODECOV_TOKEN}
 
   build_osx:
     runs-on: macos-latest
@@ -59,7 +59,7 @@ jobs:
       run: |
         curl -Os https://uploader.codecov.io/latest/macos/codecov
         chmod +x codecov
-        ./codecov
+        ./codecov -t ${CODECOV_TOKEN}
 
   build_windows:
     runs-on: windows-latest
@@ -90,4 +90,4 @@ jobs:
       run: |
         $ProgressPreference = 'SilentlyContinue'
         Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
-        .\codecov.exe
+        .\codecov.exe -t ${CODECOV_TOKEN}
